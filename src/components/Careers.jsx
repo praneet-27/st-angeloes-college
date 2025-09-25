@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 
 const Careers = () => {
-  const [isVisible, setIsVisible] = useState(false);
   const [headerVisible, setHeaderVisible] = useState(false);
   const [openingsVisible, setOpeningsVisible] = useState(false);
   const [applyVisible, setApplyVisible] = useState(false);

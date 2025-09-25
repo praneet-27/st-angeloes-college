@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 
 const PrePrimary = () => {
-  const [isVisible, setIsVisible] = useState(false);
   const [headerVisible, setHeaderVisible] = useState(false);
   const [subjectsVisible, setSubjectsVisible] = useState(false);
   const [approachVisible, setApproachVisible] = useState(false);

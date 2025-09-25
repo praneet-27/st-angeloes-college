@@ -38,7 +38,7 @@ const SchoolStats = () => {
     }
 
     return () => observer.disconnect();
-  }, []);
+  }, [stats]);
 
   const animateCount = (key, target) => {
     const duration = 2000; // 2 seconds

@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 
 const SecondaryAcademics = () => {
-  const [isVisible, setIsVisible] = useState(false);
   const [headerVisible, setHeaderVisible] = useState(false);
   const [curriculumVisible, setCurriculumVisible] = useState(false);
   const [examPrepVisible, setExamPrepVisible] = useState(false);

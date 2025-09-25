@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 
 const Gallery = () => {
-  const [isVisible, setIsVisible] = useState(false);
   const [headerVisible, setHeaderVisible] = useState(false);
   const [tabsVisible, setTabsVisible] = useState(false);
   const [galleryVisible, setGalleryVisible] = useState(false);

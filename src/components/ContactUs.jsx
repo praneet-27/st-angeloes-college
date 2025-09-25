@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 
 const ContactUs = () => {
-  const [isVisible, setIsVisible] = useState(false);
   const [headerVisible, setHeaderVisible] = useState(false);
   const [formVisible, setFormVisible] = useState(false);
   const [infoVisible, setInfoVisible] = useState(false);
@@ -252,6 +251,7 @@ const ContactUs = () => {
                 <iframe
                   className="w-full h-80 rounded-xl"
                   src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3559.61391741743!2d80.9461656150444!3d26.85176198315486!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x399bfd0813089e03%3A0x729221190e38b335!2sLucknow%2C%20Uttar%20Pradesh%2C%20India!5e0!3m2!1sen!2sus!4v1684321567890!5m2!1sen!2sus"
+                  title="St. Angelo's College Location Map"
                   style={{ border: 0 }}
                   allowFullScreen=""
                   loading="lazy"

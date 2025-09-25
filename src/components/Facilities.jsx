@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 
 const Facilities = () => {
-  const [isVisible, setIsVisible] = useState(false);
   const [headerVisible, setHeaderVisible] = useState(false);
   const [cardsVisible, setCardsVisible] = useState(false);
   const [hostelVisible, setHostelVisible] = useState(false);
