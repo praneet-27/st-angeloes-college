@@ -2,7 +2,6 @@ import React, { useEffect, useState, useRef } from 'react';
 import EnquiryModal from './EnquiryModal';
 
 const Admissions = () => {
-  const [isVisible, setIsVisible] = useState(false);
   const [headerVisible, setHeaderVisible] = useState(false);
   const [guidelinesVisible, setGuidelinesVisible] = useState(false);
   const [timelineVisible, setTimelineVisible] = useState(false);
@@ -22,7 +21,8 @@ const Admissions = () => {
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            setIsVisible(true);
+            // Animation triggered when section is visible
+            console.log('Section is visible');
           }
         });
       },
