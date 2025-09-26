@@ -24,7 +24,7 @@ function App() {
     <Router>
       <Routes>
         {/* Admin Routes - No Header/Footer */}
-        <Route path="/admin" element={<AdminLayout />}>
+        <Route path="/admin/*" element={<AdminLayout />}>
           <Route index element={<ProtectedAdmin />} />
         </Route>
         
