@@ -14,17 +14,26 @@ import Facilities from './components/Facilities';
 import ContactUs from './components/ContactUs';
 import Gallery from './components/Gallery';
 import Careers from './components/Careers';
-import Admin from './components/Admin';
+import AdminLayout from './components/AdminLayout';
+import ProtectedAdmin from './components/ProtectedAdmin';
 import Footer from './components/Footer';
 import FloatingEnquiryButton from './components/FloatingEnquiryButton';
 
 function App() {
   return (
     <Router>
-      <div className="bg-background-light dark:bg-background-dark font-display text-slate-800 dark:text-slate-200">
-        <div className="relative min-h-screen w-full flex-col overflow-x-hidden">
-          <Header />
-          
+      <Routes>
+        {/* Admin Routes - No Header/Footer */}
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<ProtectedAdmin />} />
+        </Route>
+        
+        {/* Main Website Routes - With Header/Footer */}
+        <Route path="/*" element={
+          <div className="bg-background-light dark:bg-background-dark font-display text-slate-800 dark:text-slate-200">
+            <div className="relative min-h-screen w-full flex-col overflow-x-hidden">
+              <Header />
+              
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/about" element={<AboutUs />} />
@@ -39,15 +48,16 @@ function App() {
                 <Route path="/contact" element={<ContactUs />} />
                 <Route path="/gallery" element={<Gallery />} />
                 <Route path="/careers" element={<Careers />} />
-                <Route path="/admin" element={<Admin />} />
               </Routes>
-          
-          <Footer />
-          
-          {/* Floating Enquiry Button */}
-          <FloatingEnquiryButton />
-        </div>
-      </div>
+              
+              <Footer />
+              
+              {/* Floating Enquiry Button */}
+              <FloatingEnquiryButton />
+            </div>
+          </div>
+        } />
+      </Routes>
     </Router>
   );
 }

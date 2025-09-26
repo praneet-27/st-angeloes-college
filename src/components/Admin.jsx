@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 
-const Admin = () => {
+const Admin = ({ onLogout }) => {
   const [galleryImages, setGalleryImages] = useState([]);
   const [enquiries, setEnquiries] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -217,7 +217,7 @@ const Admin = () => {
   }, [selectedSection, loadGalleryImages, loadEnquiries]);
 
   return (
-    <div className="bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen">
+    <div className="min-h-screen">
       {/* Floating Background Elements */}
       <div className="absolute top-20 left-10 w-20 h-20 bg-royal-blue/5 rounded-full animate-float"></div>
       <div className="absolute top-40 right-20 w-16 h-16 bg-gold/10 rounded-full animate-float" style={{ animationDelay: '2s' }}></div>
@@ -226,17 +226,30 @@ const Admin = () => {
 
       {/* Header Section */}
       <header className="bg-gradient-to-r from-royal-blue to-blue-800 text-white py-8 mb-12 animate-fadeIn">
-        <div className="container mx-auto px-4 text-center">
-          <div className="inline-flex items-center gap-3 bg-white/20 backdrop-blur-sm px-6 py-3 rounded-full mb-6 animate-scaleIn">
-            <span className="text-2xl">🎛️</span>
-            <span className="font-semibold text-lg">Admin Portal</span>
+        <div className="container mx-auto px-4">
+          <div className="flex justify-between items-center">
+            <div className="text-center flex-1">
+              <div className="inline-flex items-center gap-3 bg-white/20 backdrop-blur-sm px-6 py-3 rounded-full mb-6 animate-scaleIn">
+                <span className="text-2xl">🎛️</span>
+                <span className="font-semibold text-lg">Admin Portal</span>
+              </div>
+              <h1 className="text-4xl md:text-5xl font-bold mb-4 animate-slideInUp" style={{ fontFamily: "'Playfair Display', serif" }}>
+                St. Angeloes College
+              </h1>
+              <p className="text-xl opacity-90 animate-slideInUp" style={{ animationDelay: '0.2s' }}>
+                Management Dashboard
+              </p>
+            </div>
+            <div className="animate-slideInRight" style={{ animationDelay: '0.3s' }}>
+              <button
+                onClick={onLogout}
+                className="bg-white/20 hover:bg-white/30 backdrop-blur-sm px-6 py-3 rounded-xl font-semibold flex items-center gap-2 transition-all duration-300 hover:scale-105"
+              >
+                <span className="text-lg">🚪</span>
+                <span>Logout</span>
+              </button>
+            </div>
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 animate-slideInUp" style={{ fontFamily: "'Playfair Display', serif" }}>
-            St. Angeloes College
-          </h1>
-          <p className="text-xl opacity-90 animate-slideInUp" style={{ animationDelay: '0.2s' }}>
-            Management Dashboard
-          </p>
         </div>
       </header>
 
