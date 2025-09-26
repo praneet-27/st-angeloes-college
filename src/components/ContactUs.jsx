@@ -19,7 +19,7 @@ const ContactUs = () => {
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            setIsVisible(true);
+            // Animation triggered when section is visible
           }
         });
       },

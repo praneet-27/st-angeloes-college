@@ -15,7 +15,7 @@ const Careers = () => {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          setIsVisible(true);
+          // Animation triggered when section is visible
         }
       },
       { threshold: 0.1 }
