@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Routes, Route } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import AdminAuth from './AdminAuth';
 import Admin from './Admin';
@@ -81,7 +82,16 @@ const ProtectedAdmin = () => {
     return <AdminAuth onLogin={handleLogin} />;
   }
 
-  return <Admin onLogout={handleLogout} />;
+  return (
+    <div className="bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen">
+      <Routes>
+        <Route path="/" element={<Admin onLogout={handleLogout} />} />
+        <Route path="/gallery" element={<Admin onLogout={handleLogout} />} />
+        <Route path="/enquiries" element={<Admin onLogout={handleLogout} />} />
+        <Route path="/news" element={<Admin onLogout={handleLogout} />} />
+      </Routes>
+    </div>
+  );
 };
 
 export default ProtectedAdmin;
