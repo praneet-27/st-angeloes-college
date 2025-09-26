@@ -1,6 +1,6 @@
 require('dotenv').config();
 const { createClient } = require('@supabase/supabase-js');
-const { requireAdminAuth } = require('./utils/auth');
+const { requireAdminAuth, supabaseAdmin } = require('./utils/auth');
 
 // Try both old and new environment variable names
 const supabaseUrl = process.env.REACT_APP_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -118,6 +118,19 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'News/Event ID is required' });
       }
 
+      // First, get the news item to check if it has an image
+      const { data: newsItem, error: fetchError } = await supabase
+        .from('news_events')
+        .select('image_url')
+        .eq('id', id)
+        .single();
+
+      if (fetchError) {
+        console.error('Error fetching news item:', fetchError);
+        throw fetchError;
+      }
+
+      // Delete the news item from database
       const { error } = await supabase
         .from('news_events')
         .delete()
@@ -128,7 +141,29 @@ export default async function handler(req, res) {
         throw error;
       }
 
-      res.status(200).json({ success: true, message: 'News/Event deleted successfully' });
+      // If there's an image, try to delete it from storage
+      if (newsItem.image_url) {
+        try {
+          // Extract filename from the public URL
+          const urlParts = newsItem.image_url.split('/');
+          const filename = urlParts[urlParts.length - 1];
+          
+          // Delete from Supabase Storage using admin client
+          const { error: storageError } = await supabaseAdmin.storage
+            .from('news-images')
+            .remove([filename]);
+
+          if (storageError) {
+            console.error('Storage delete error:', storageError);
+            // Don't throw error here, as the database record is already deleted
+          }
+        } catch (storageError) {
+          console.error('Error deleting image from storage:', storageError);
+          // Don't throw error here, as the database record is already deleted
+        }
+      }
+
+      res.status(200).json({ success: true, message: 'News/Event and associated image deleted successfully' });
     } catch (error) {
       console.error('Failed to delete news/event:', error);
       res.status(500).json({ error: 'Failed to delete news/event' });

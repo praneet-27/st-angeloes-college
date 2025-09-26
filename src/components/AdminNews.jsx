@@ -11,9 +11,11 @@ const AdminNews = ({ onLogout }) => {
   const [newsForm, setNewsForm] = useState({
     title: '',
     content: '',
-    type: 'news'
+    type: 'news',
+    image: null
   });
   const [showNewsForm, setShowNewsForm] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   // Helper function to get auth token
   const getAuthToken = async () => {
@@ -80,6 +82,64 @@ const AdminNews = ({ onLogout }) => {
     }
   }, []);
 
+  // Handle image upload
+  const handleImageUpload = async (file) => {
+    if (!file) return null;
+
+    // Check file size (4MB = 4 * 1024 * 1024 bytes)
+    const maxSize = 4 * 1024 * 1024; // 4MB
+    if (file.size > maxSize) {
+      showError('File size too large. Please select an image smaller than 4MB.');
+      return null;
+    }
+
+    setUploadingImage(true);
+    
+    try {
+      const reader = new FileReader();
+      return new Promise((resolve, reject) => {
+        reader.onload = async (e) => {
+          const base64Data = e.target.result;
+          
+          try {
+            const token = await getAuthToken();
+            const response = await fetch('/api/news/upload-image', {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                imageUrl: base64Data,
+                filename: `news-${Date.now()}.jpg`
+              })
+            });
+            
+            if (response.ok) {
+              const result = await response.json();
+              if (result.success) {
+                resolve(result.data.imageUrl);
+              } else {
+                reject(new Error(result.error));
+              }
+            } else {
+              reject(new Error(`HTTP ${response.status}: ${response.statusText}`));
+            }
+          } catch (error) {
+            reject(error);
+          } finally {
+            setUploadingImage(false);
+          }
+        };
+        reader.readAsDataURL(file);
+      });
+    } catch (error) {
+      setUploadingImage(false);
+      showError('Error uploading image: ' + error.message);
+      return null;
+    }
+  };
+
   // Create news item
   const createNewsItem = async () => {
     if (!newsForm.title.trim() || !newsForm.content.trim()) {
@@ -88,6 +148,14 @@ const AdminNews = ({ onLogout }) => {
     }
 
     try {
+      let imageUrl = null;
+      
+      // Upload image if provided
+      if (newsForm.image) {
+        imageUrl = await handleImageUpload(newsForm.image);
+        if (!imageUrl) return; // Stop if image upload failed
+      }
+
       const token = await getAuthToken();
       const response = await fetch('/api/news', {
         method: 'POST',
@@ -95,14 +163,19 @@ const AdminNews = ({ onLogout }) => {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(newsForm)
+        body: JSON.stringify({
+          title: newsForm.title,
+          content: newsForm.content,
+          type: newsForm.type,
+          image_url: imageUrl
+        })
       });
       
       if (response.ok) {
         const result = await response.json();
         if (result.success) {
           showSuccess('News item created successfully!');
-          setNewsForm({ title: '', content: '', type: 'news' });
+          setNewsForm({ title: '', content: '', type: 'news', image: null });
           setShowNewsForm(false);
           loadNewsItems();
         } else {
@@ -118,7 +191,7 @@ const AdminNews = ({ onLogout }) => {
 
   // Delete news item
   const deleteNewsItem = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this news item?')) {
+    if (!window.confirm('Are you sure you want to delete this news item? This will also delete the associated image.')) {
       return;
     }
     
@@ -135,7 +208,7 @@ const AdminNews = ({ onLogout }) => {
       if (response.ok) {
         const result = await response.json();
         if (result.success) {
-          showSuccess('News item deleted successfully!');
+          showSuccess('News item and associated image deleted successfully!');
           loadNewsItems();
         } else {
           showError('Error: ' + result.error);
@@ -243,18 +316,67 @@ const AdminNews = ({ onLogout }) => {
                 placeholder="Enter news content"
               />
             </div>
+            <div className="mb-6">
+              <label className="block text-sm font-semibold text-slate-700 mb-2">Featured Image (Optional):</label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setNewsForm({...newsForm, image: e.target.files[0]})}
+                className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-300 bg-white/50 backdrop-blur-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-green-500/10 file:text-green-500 hover:file:bg-green-500/20"
+              />
+              {newsForm.image && (
+                <div className="mt-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium text-slate-700">📁 {newsForm.image.name}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className={`text-sm font-medium px-2 py-1 rounded-full ${
+                        newsForm.image.size > 4 * 1024 * 1024 
+                          ? 'bg-red-100 text-red-700' 
+                          : newsForm.image.size > 2 * 1024 * 1024 
+                            ? 'bg-yellow-100 text-yellow-700'
+                            : 'bg-green-100 text-green-700'
+                      }`}>
+                        {(newsForm.image.size / (1024 * 1024)).toFixed(1)} MB
+                      </span>
+                    </div>
+                  </div>
+                  {newsForm.image.size > 4 * 1024 * 1024 && (
+                    <div className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                      <span>⚠️</span>
+                      <span>File size exceeds 4MB limit</span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
             <div className="flex gap-3">
               <button
                 onClick={createNewsItem}
-                className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-8 py-3 rounded-xl font-semibold flex items-center gap-2 hover:scale-105 transition-all duration-300 hover:from-emerald-600 hover:to-green-500"
+                disabled={uploadingImage}
+                className={`px-8 py-3 rounded-xl font-semibold flex items-center gap-2 transition-all duration-300 ${
+                  uploadingImage
+                    ? 'bg-gray-400 text-white cursor-not-allowed opacity-50'
+                    : 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:scale-105 hover:from-emerald-600 hover:to-green-500'
+                }`}
               >
-                <span className="text-lg">💾</span>
-                Save News Item
+                {uploadingImage ? (
+                  <>
+                    <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
+                    <span>Uploading Image...</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-lg">💾</span>
+                    Save News Item
+                  </>
+                )}
               </button>
               <button
                 onClick={() => {
                   setShowNewsForm(false);
-                  setNewsForm({ title: '', content: '', type: 'news' });
+                  setNewsForm({ title: '', content: '', type: 'news', image: null });
                 }}
                 className="bg-slate-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-slate-600 transition-all duration-300"
               >
@@ -305,6 +427,15 @@ const AdminNews = ({ onLogout }) => {
                         </span>
                       </div>
                       <h3 className="text-xl font-semibold text-slate-800 mb-3">{item.title}</h3>
+                      {item.image_url && (
+                        <div className="mb-4">
+                          <img 
+                            src={item.image_url} 
+                            alt={item.title}
+                            className="w-full max-w-md h-48 object-cover rounded-xl shadow-lg"
+                          />
+                        </div>
+                      )}
                       <p className="text-slate-600 leading-relaxed whitespace-pre-wrap">{item.content}</p>
                     </div>
                     <button 
