@@ -133,6 +133,6 @@ This project is licensed under the MIT License.
 ## Contact
 
 For questions or support, please contact:
-- Email: info@stangeloslucknow.com
-- Phone: +91-522-1234567
-- Address: Vibutikhand, Gomti Nagar, Lucknow, UP 226010
+- Email: st.angeloes2013@gmail.com
+- Phone: +91 8090097847
+- Address: SHANTI NAGAR, NEAR AIRPORT, KANPUR ROAD, LUCKNOW

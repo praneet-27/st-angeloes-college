@@ -14,6 +14,7 @@ import Facilities from './components/Facilities';
 import ContactUs from './components/ContactUs';
 import Gallery from './components/Gallery';
 import Careers from './components/Careers';
+import Admin from './components/Admin';
 import Footer from './components/Footer';
 import FloatingEnquiryButton from './components/FloatingEnquiryButton';
 
@@ -38,6 +39,7 @@ function App() {
                 <Route path="/contact" element={<ContactUs />} />
                 <Route path="/gallery" element={<Gallery />} />
                 <Route path="/careers" element={<Careers />} />
+                <Route path="/admin" element={<Admin />} />
               </Routes>
           
           <Footer />
