@@ -84,10 +84,14 @@ export default async function handler(req, res) {
       const timestamp = Date.now();
       const filename = `gallery-${section}-${timestamp}.jpg`;
 
+      // Convert base64 data URL to buffer
+      const base64Data = imageUrl.split(',')[1]; // Remove data:image/jpeg;base64, prefix
+      const buffer = Buffer.from(base64Data, 'base64');
+
       // Upload to Supabase Storage using admin client
       const { data: uploadData, error: uploadError } = await supabaseAdmin.storage
         .from('gallery-images')
-        .upload(filename, imageUrl, {
+        .upload(filename, buffer, {
           contentType: 'image/jpeg',
           upsert: false
         });

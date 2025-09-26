@@ -117,7 +117,7 @@ const Admin = () => {
     try {
       const reader = new FileReader();
       reader.onload = async (e) => {
-        const base64 = e.target.result.split(',')[1];
+        const base64Data = e.target.result; // Keep the full data URL with prefix
         
         try {
           const response = await fetch('/api/gallery', {
@@ -127,7 +127,7 @@ const Admin = () => {
             },
             body: JSON.stringify({
               section: selectedSection,
-              imageUrl: base64
+              imageUrl: base64Data
             })
           });
           
