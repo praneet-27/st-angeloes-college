@@ -1,9 +1,9 @@
 require('dotenv').config();
 const { createClient } = require('@supabase/supabase-js');
+const { requireAdminAuth, supabaseAdmin } = require('./utils/auth');
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables');
@@ -11,14 +11,6 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 // Client for public operations
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-// Client for admin operations (uses service role key)
-const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false
-  }
-});
 
 export default async function handler(req, res) {
   // Enable CORS
@@ -72,6 +64,10 @@ export default async function handler(req, res) {
   }
 
   if (req.method === 'POST') {
+    // Require admin authentication for POST operations
+    const isAuthenticated = await requireAdminAuth(req, res);
+    if (!isAuthenticated) return;
+
     try {
       const { section, imageUrl } = req.body;
 
@@ -138,6 +134,10 @@ export default async function handler(req, res) {
   }
 
   if (req.method === 'DELETE') {
+    // Require admin authentication for DELETE operations
+    const isAuthenticated = await requireAdminAuth(req, res);
+    if (!isAuthenticated) return;
+
     try {
       const { id } = req.query;
 

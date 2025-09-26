@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { supabase } from '../../lib/supabase';
 
 const AdminAuth = ({ onLogin }) => {
   const [credentials, setCredentials] = useState({
@@ -14,17 +15,29 @@ const AdminAuth = ({ onLogin }) => {
     setError('');
 
     try {
-      // Simple authentication - in production, this should be more secure
-      if (credentials.username === 'admin' && credentials.password === 'stangeloes2024') {
-        // Store auth token in localStorage
-        localStorage.setItem('adminAuth', 'true');
-        localStorage.setItem('adminLoginTime', Date.now().toString());
-        onLogin(true);
-      } else {
-        setError('Invalid username or password');
+      // Use Supabase authentication
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: credentials.username, // Using username field as email
+        password: credentials.password
+      });
+
+      if (error) {
+        setError('Invalid email or password');
+        console.error('Login error:', error);
+      } else if (data.user) {
+        // Check if user has admin role (we'll add this to user metadata)
+        const userRole = data.user.user_metadata?.role;
+        if (userRole === 'admin') {
+          onLogin(true);
+        } else {
+          // Sign out if not admin
+          await supabase.auth.signOut();
+          setError('Access denied. Admin privileges required.');
+        }
       }
     } catch (err) {
       setError('Login failed. Please try again.');
+      console.error('Login error:', err);
     } finally {
       setIsLoading(false);
     }
@@ -66,16 +79,16 @@ const AdminAuth = ({ onLogin }) => {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="animate-slideInUp" style={{ animationDelay: '0.3s' }}>
               <label className="block text-sm font-semibold text-slate-700 mb-2">
-                Username
+                Email
               </label>
               <input
-                type="text"
+                type="email"
                 name="username"
                 value={credentials.username}
                 onChange={handleInputChange}
                 required
                 className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-royal-blue focus:border-transparent transition-all duration-300 bg-white/50 backdrop-blur-sm"
-                placeholder="Enter username"
+                placeholder="Enter admin email"
               />
             </div>
 

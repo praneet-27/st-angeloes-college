@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { supabase } from '../../lib/supabase';
 
 const Admin = ({ onLogout }) => {
   const [galleryImages, setGalleryImages] = useState([]);
@@ -7,6 +8,12 @@ const Admin = ({ onLogout }) => {
   const [selectedSection, setSelectedSection] = useState('Photos');
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploading, setUploading] = useState(false);
+
+  // Helper function to get auth token
+  const getAuthToken = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    return session?.access_token;
+  };
 
   // Show success notification
   const showSuccess = (message) => {
@@ -78,7 +85,13 @@ const Admin = ({ onLogout }) => {
       // Try to fetch from API
       let result;
       try {
-        const response = await fetch('/api/admin/enquiries');
+        const token = await getAuthToken();
+        const response = await fetch('/api/admin/enquiries', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
         if (response.ok) {
           result = await response.json();
         } else {
@@ -120,9 +133,11 @@ const Admin = ({ onLogout }) => {
         const base64Data = e.target.result; // Keep the full data URL with prefix
         
         try {
+          const token = await getAuthToken();
           const response = await fetch('/api/gallery', {
             method: 'POST',
             headers: {
+              'Authorization': `Bearer ${token}`,
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
@@ -164,8 +179,13 @@ const Admin = ({ onLogout }) => {
     }
     
     try {
+      const token = await getAuthToken();
       const response = await fetch(`/api/gallery?id=${id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
       });
       
       if (response.ok) {
@@ -188,7 +208,13 @@ const Admin = ({ onLogout }) => {
   // Download enquiries as Excel
   const downloadEnquiries = async () => {
     try {
-      const response = await fetch('/api/admin/enquiries?download=excel');
+      const token = await getAuthToken();
+      const response = await fetch('/api/admin/enquiries?download=excel', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
       
       if (response.ok) {
         const blob = await response.blob();

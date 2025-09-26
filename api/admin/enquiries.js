@@ -1,5 +1,6 @@
 require('dotenv').config();
 const { createClient } = require('@supabase/supabase-js');
+const { requireAdminAuth } = require('../utils/auth');
 const XLSX = require('xlsx');
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -23,6 +24,10 @@ export default async function handler(req, res) {
   }
 
   if (req.method === 'GET') {
+    // Require admin authentication for all enquiries operations
+    const isAuthenticated = await requireAdminAuth(req, res);
+    if (!isAuthenticated) return;
+
     try {
       const { download } = req.query;
 

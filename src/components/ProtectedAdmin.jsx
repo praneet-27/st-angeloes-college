@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { supabase } from '../../lib/supabase';
 import AdminAuth from './AdminAuth';
 import Admin from './Admin';
 
@@ -7,39 +8,62 @@ const ProtectedAdmin = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is authenticated
-    const checkAuth = () => {
-      const authToken = localStorage.getItem('adminAuth');
-      const loginTime = localStorage.getItem('adminLoginTime');
-      
-      if (authToken === 'true' && loginTime) {
-        // Check if login is not older than 24 hours
-        const now = Date.now();
-        const loginTimestamp = parseInt(loginTime);
-        const hoursSinceLogin = (now - loginTimestamp) / (1000 * 60 * 60);
+    // Check if user is authenticated with Supabase
+    const checkAuth = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
         
-        if (hoursSinceLogin < 24) {
-          setIsAuthenticated(true);
+        if (error) {
+          console.error('Error checking session:', error);
+          setIsAuthenticated(false);
+        } else if (session?.user) {
+          // Check if user has admin role
+          const userRole = session.user.user_metadata?.role;
+          if (userRole === 'admin') {
+            setIsAuthenticated(true);
+          } else {
+            // Sign out if not admin
+            await supabase.auth.signOut();
+            setIsAuthenticated(false);
+          }
         } else {
-          // Clear expired auth
-          localStorage.removeItem('adminAuth');
-          localStorage.removeItem('adminLoginTime');
+          setIsAuthenticated(false);
         }
+      } catch (err) {
+        console.error('Auth check error:', err);
+        setIsAuthenticated(false);
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     };
 
     checkAuth();
+
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session?.user) {
+        const userRole = session.user.user_metadata?.role;
+        setIsAuthenticated(userRole === 'admin');
+      } else if (event === 'SIGNED_OUT') {
+        setIsAuthenticated(false);
+      }
+      setIsLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const handleLogin = (success) => {
     setIsAuthenticated(success);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('adminAuth');
-    localStorage.removeItem('adminLoginTime');
-    setIsAuthenticated(false);
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      setIsAuthenticated(false);
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   };
 
   if (isLoading) {
