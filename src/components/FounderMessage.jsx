@@ -3,7 +3,7 @@ import React, { useEffect, useState, useRef } from 'react';
 const FounderMessage = () => {
   const [isVisible, setIsVisible] = useState(false);
   const sectionRef = useRef(null);
-  const founderImageUrl = "/images/founder.jpeg";
+  const founderImageUrl = "/images/founder.png";
 
   useEffect(() => {
     const observer = new IntersectionObserver(
