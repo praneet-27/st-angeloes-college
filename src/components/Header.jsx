@@ -55,11 +55,11 @@ const Header = () => {
           <div className="flex items-center justify-between py-4">
             <div className="flex items-center gap-8">
               <Link className="flex items-center gap-3" to="/">
-                <div className="w-10 h-10 text-primary">
-                  <svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M42.4379 44C42.4379 44 36.0744 33.9038 41.1692 24C46.8624 12.9336 42.2078 4 42.2078 4L7.01134 4C7.01134 4 11.6577 12.932 5.96912 23.9969C0.876273 33.9029 7.27094 44 7.27094 44L42.4379 44Z" fill="currentColor"></path>
-                  </svg>
-                </div>
+                <img 
+                  src="/images/logo.png" 
+                  alt="St. Angeloes College Logo" 
+                  className="w-10 h-10 object-contain"
+                />
                 <h1 className="text-xl font-bold text-slate-900 dark:text-white">St. Angeloes College</h1>
               </Link>
               
