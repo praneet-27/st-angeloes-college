@@ -8,6 +8,7 @@ const Admin = ({ onLogout }) => {
   const [selectedSection, setSelectedSection] = useState('Photos');
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   // Helper function to get auth token
   const getAuthToken = async () => {
@@ -125,7 +126,23 @@ const Admin = ({ onLogout }) => {
       return;
     }
 
+    // Check file size (4MB = 4 * 1024 * 1024 bytes)
+    const maxSize = 4 * 1024 * 1024; // 4MB
+    if (selectedFile.size > maxSize) {
+      showError('File size too large. Please select an image smaller than 4MB.');
+      return;
+    }
+
     setUploading(true);
+    setUploadProgress(0);
+    
+    // Simulate progress
+    const progressInterval = setInterval(() => {
+      setUploadProgress(prev => {
+        if (prev >= 90) return prev;
+        return prev + Math.random() * 15;
+      });
+    }, 200);
     
     try {
       const reader = new FileReader();
@@ -149,26 +166,39 @@ const Admin = ({ onLogout }) => {
           if (response.ok) {
             const result = await response.json();
             if (result.success) {
-              showSuccess('Image uploaded successfully!');
-              setSelectedFile(null);
-              document.getElementById('galleryImage').value = '';
-              loadGalleryImages();
+              clearInterval(progressInterval);
+              setUploadProgress(100);
+              setTimeout(() => {
+                showSuccess('Image uploaded successfully!');
+                setSelectedFile(null);
+                document.getElementById('galleryImage').value = '';
+                loadGalleryImages();
+                setUploading(false);
+                setUploadProgress(0);
+              }, 500);
             } else {
+              clearInterval(progressInterval);
               showError('Error: ' + result.error);
+              setUploading(false);
+              setUploadProgress(0);
             }
           } else {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
           }
         } catch (apiError) {
           console.log('API not available:', apiError.message);
+          clearInterval(progressInterval);
           showError('API not available. Please try again later.');
+          setUploading(false);
+          setUploadProgress(0);
         }
       };
       reader.readAsDataURL(selectedFile);
     } catch (error) {
+      clearInterval(progressInterval);
       showError('Error uploading image: ' + error.message);
-    } finally {
       setUploading(false);
+      setUploadProgress(0);
     }
   };
 
@@ -354,18 +384,58 @@ const Admin = ({ onLogout }) => {
                 onChange={(e) => setSelectedFile(e.target.files[0])}
                 className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-royal-blue focus:border-transparent transition-all duration-300 bg-white/50 backdrop-blur-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-royal-blue/10 file:text-royal-blue hover:file:bg-royal-blue/20"
               />
+              {selectedFile && (
+                <div className="mt-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium text-slate-700">📁 {selectedFile.name}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className={`text-sm font-medium px-2 py-1 rounded-full ${
+                        selectedFile.size > 4 * 1024 * 1024 
+                          ? 'bg-red-100 text-red-700' 
+                          : selectedFile.size > 2 * 1024 * 1024 
+                            ? 'bg-yellow-100 text-yellow-700'
+                            : 'bg-green-100 text-green-700'
+                      }`}>
+                        {(selectedFile.size / (1024 * 1024)).toFixed(1)} MB
+                      </span>
+                    </div>
+                  </div>
+                  {selectedFile.size > 4 * 1024 * 1024 && (
+                    <div className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                      <span>⚠️</span>
+                      <span>File size exceeds 4MB limit</span>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
           
           <button 
             onClick={uploadGalleryImage}
-            disabled={uploading}
-            className="bg-gradient-to-r from-royal-blue to-blue-800 text-white px-8 py-3 rounded-xl font-semibold flex items-center gap-2 hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed hover:from-blue-800 hover:to-royal-blue"
+            disabled={uploading || (selectedFile && selectedFile.size > 4 * 1024 * 1024)}
+            className={`px-8 py-3 rounded-xl font-semibold flex items-center gap-2 transition-all duration-300 ${
+              uploading || (selectedFile && selectedFile.size > 4 * 1024 * 1024)
+                ? 'bg-gray-400 text-white cursor-not-allowed opacity-50'
+                : 'bg-gradient-to-r from-royal-blue to-blue-800 text-white hover:scale-105 hover:from-blue-800 hover:to-royal-blue'
+            }`}
           >
             {uploading ? (
               <>
-                <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
-                Uploading...
+                <div className="flex items-center gap-2">
+                  <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
+                  <span>Uploading...</span>
+                </div>
+                <div className="ml-2 text-xs opacity-75">
+                  Processing image...
+                </div>
+              </>
+            ) : selectedFile && selectedFile.size > 4 * 1024 * 1024 ? (
+              <>
+                <span className="text-lg">⚠️</span>
+                File Too Large
               </>
             ) : (
               <>
@@ -374,6 +444,28 @@ const Admin = ({ onLogout }) => {
               </>
             )}
           </button>
+          
+          {/* Upload Progress Bar */}
+          {uploading && (
+            <div className="mt-4 animate-fadeIn">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-slate-700">Upload Progress</span>
+                <span className="text-sm text-slate-600">{Math.round(uploadProgress)}%</span>
+              </div>
+              <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+                <div 
+                  className="bg-gradient-to-r from-royal-blue to-blue-800 h-2 rounded-full transition-all duration-300 ease-out"
+                  style={{ width: `${uploadProgress}%` }}
+                ></div>
+              </div>
+              <div className="mt-2 text-xs text-slate-500 text-center">
+                {uploadProgress < 30 ? 'Reading file...' : 
+                 uploadProgress < 60 ? 'Processing image...' : 
+                 uploadProgress < 90 ? 'Uploading to server...' : 
+                 uploadProgress < 100 ? 'Finalizing...' : 'Complete!'}
+              </div>
+            </div>
+          )}
         </div>
         
         {/* Gallery Images Display */}
