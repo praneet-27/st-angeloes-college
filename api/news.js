@@ -78,12 +78,16 @@ export default async function handler(req, res) {
       // Handle image upload if imageData is provided
       if (imageData) {
         try {
+          console.log('Starting image upload...');
           const timestamp = Date.now();
           const filename = `news-${timestamp}.jpg`;
 
           // Convert base64 data URL to buffer
           const base64Data = imageData.split(',')[1]; // Remove data:image/jpeg;base64, prefix
+          console.log('Base64 data length:', base64Data.length);
+          
           const buffer = Buffer.from(base64Data, 'base64');
+          console.log('Buffer size:', buffer.length);
 
           // Upload to Supabase Storage using admin client
           const { data: uploadData, error: uploadError } = await supabaseAdmin.storage
@@ -98,14 +102,20 @@ export default async function handler(req, res) {
             throw uploadError;
           }
 
+          console.log('Upload successful:', uploadData);
+
           const { data: { publicUrl } } = supabaseAdmin.storage
             .from('news-images')
             .getPublicUrl(filename);
 
           finalImageUrl = publicUrl;
+          console.log('Final image URL:', finalImageUrl);
         } catch (uploadError) {
           console.error('Image upload error:', uploadError);
-          return res.status(500).json({ error: 'Failed to upload image' });
+          return res.status(500).json({ 
+            error: 'Failed to upload image',
+            details: uploadError.message 
+          });
         }
       }
 

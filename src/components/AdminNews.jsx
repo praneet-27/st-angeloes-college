@@ -115,8 +115,19 @@ const AdminNews = ({ onLogout }) => {
       
       // Convert image to base64 if provided
       if (newsForm.image) {
+        console.log('Converting image to base64...', newsForm.image.name, newsForm.image.size);
         imageData = await fileToBase64(newsForm.image);
+        console.log('Base64 conversion complete, length:', imageData.length);
       }
+
+      const requestBody = {
+        title: newsForm.title,
+        content: newsForm.content,
+        type: newsForm.type,
+        imageData: imageData
+      };
+
+      console.log('Sending request with imageData:', imageData ? 'present' : 'null');
 
       const token = await getAuthToken();
       const response = await fetch('/api/news', {
@@ -125,12 +136,7 @@ const AdminNews = ({ onLogout }) => {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          title: newsForm.title,
-          content: newsForm.content,
-          type: newsForm.type,
-          imageData: imageData
-        })
+        body: JSON.stringify(requestBody)
       });
       
       if (response.ok) {
