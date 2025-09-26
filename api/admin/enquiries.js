@@ -32,11 +32,10 @@ export default async function handler(req, res) {
     try {
       const { download } = req.query;
 
-      const { data, error } = await supabase
-        .from('enquiries')
-        .select('*')
-        .eq('is_active', true)
-        .order('created_at', { ascending: false });
+            const { data, error } = await supabase
+              .from('enquiries')
+              .select('*')
+              .order('created_at', { ascending: false });
 
       if (error) {
         console.error('Database error:', error);
