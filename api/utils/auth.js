@@ -3,18 +3,7 @@ const { createClient } = require('@supabase/supabase-js');
 const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
 const supabaseServiceKey = process.env.REACT_APP_SUPABASE_SERVICE_ROLE_KEY;
 
-console.log('Auth utility - Environment check:', {
-  hasUrl: !!supabaseUrl,
-  hasServiceKey: !!supabaseServiceKey,
-  urlLength: supabaseUrl?.length || 0,
-  serviceKeyLength: supabaseServiceKey?.length || 0
-});
-
 if (!supabaseUrl || !supabaseServiceKey) {
-  console.error('Missing Supabase environment variables:', {
-    REACT_APP_SUPABASE_URL: !!process.env.REACT_APP_SUPABASE_URL,
-    REACT_APP_SUPABASE_SERVICE_ROLE_KEY: !!process.env.REACT_APP_SUPABASE_SERVICE_ROLE_KEY
-  });
   throw new Error('Missing Supabase environment variables');
 }
 

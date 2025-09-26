@@ -6,18 +6,7 @@ const XLSX = require('xlsx');
 const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
 const supabaseKey = process.env.REACT_APP_SUPABASE_ANON_KEY;
 
-console.log('Enquiries API - Environment check:', {
-  hasUrl: !!supabaseUrl,
-  hasKey: !!supabaseKey,
-  urlLength: supabaseUrl?.length || 0,
-  keyLength: supabaseKey?.length || 0
-});
-
 if (!supabaseUrl || !supabaseKey) {
-  console.error('Missing Supabase environment variables:', {
-    REACT_APP_SUPABASE_URL: !!process.env.REACT_APP_SUPABASE_URL,
-    REACT_APP_SUPABASE_ANON_KEY: !!process.env.REACT_APP_SUPABASE_ANON_KEY
-  });
   throw new Error('Missing Supabase environment variables');
 }
 
