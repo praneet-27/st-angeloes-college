@@ -43,7 +43,7 @@ const Admin = () => {
       // Try to fetch from API
       let result;
       try {
-        const response = await fetch(`http://localhost:3000/api/gallery?section=${selectedSection}`);
+        const response = await fetch(`/api/gallery?section=${selectedSection}`);
         if (response.ok) {
           result = await response.json();
         } else {
@@ -78,7 +78,7 @@ const Admin = () => {
       // Try to fetch from API
       let result;
       try {
-        const response = await fetch('http://localhost:3000/api/admin/enquiries');
+        const response = await fetch('/api/admin/enquiries');
         if (response.ok) {
           result = await response.json();
         } else {
@@ -120,7 +120,7 @@ const Admin = () => {
         const base64 = e.target.result.split(',')[1];
         
         try {
-          const response = await fetch('http://localhost:3000/api/gallery', {
+          const response = await fetch('/api/gallery', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -164,7 +164,7 @@ const Admin = () => {
     }
     
     try {
-      const response = await fetch(`http://localhost:3000/api/gallery?id=${id}`, {
+      const response = await fetch(`/api/gallery?id=${id}`, {
         method: 'DELETE'
       });
       
@@ -188,7 +188,7 @@ const Admin = () => {
   // Download enquiries as Excel
   const downloadEnquiries = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/admin/enquiries?download=excel');
+      const response = await fetch('/api/admin/enquiries?download=excel');
       
       if (response.ok) {
         const blob = await response.blob();
