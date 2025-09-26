@@ -259,10 +259,15 @@ const Admissions = () => {
             </p>
             
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <button className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-4 bg-primary text-white font-semibold rounded-xl hover:bg-primary/90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95">
+              <a 
+                href="/PROSPECTUS_St_Angeloes_College.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-4 bg-primary text-white font-semibold rounded-xl hover:bg-primary/90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95"
+              >
                 <span className="text-xl">📥</span>
                 Download Prospectus
-              </button>
+              </a>
               <button 
                 onClick={openEnquiryModal}
                 className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-4 bg-gold/10 dark:bg-gold/20 text-gold font-semibold rounded-xl hover:bg-gold/20 dark:hover:bg-gold/30 transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105 active:scale-95"
