@@ -54,7 +54,7 @@ const AdminAuth = ({ onLogin }) => {
               <span className="text-2xl">🔐</span>
               <span className="font-semibold text-lg text-royal-blue">Admin Portal</span>
             </div>
-            <h1 className="text-3xl font-bold text-slate-800 mb-2 animate-slideInUp" style={{ fontFamily: 'Playfair Display', serif }}>
+            <h1 className="text-3xl font-bold text-slate-800 mb-2 animate-slideInUp" style={{ fontFamily: "'Playfair Display', serif" }}>
               St. Angeloes College
             </h1>
             <p className="text-slate-600 animate-slideInUp" style={{ animationDelay: '0.2s' }}>
