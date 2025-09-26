@@ -4,11 +4,20 @@ import { supabase } from '../lib/supabase';
 const Admin = ({ onLogout }) => {
   const [galleryImages, setGalleryImages] = useState([]);
   const [enquiries, setEnquiries] = useState([]);
+  const [newsItems, setNewsItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedSection, setSelectedSection] = useState('Photos');
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  
+  // News form state
+  const [newsForm, setNewsForm] = useState({
+    title: '',
+    content: '',
+    type: 'news'
+  });
+  const [showNewsForm, setShowNewsForm] = useState(false);
 
   // Helper function to get auth token
   const getAuthToken = async () => {
@@ -266,11 +275,110 @@ const Admin = ({ onLogout }) => {
     }
   };
 
+  // Load news items
+  const loadNewsItems = useCallback(async () => {
+    try {
+      const token = await getAuthToken();
+      const response = await fetch('/api/news?admin=true', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          setNewsItems(result.data || []);
+        } else {
+          showError('Failed to load news items');
+          setNewsItems([]);
+        }
+      } else {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+    } catch (apiError) {
+      console.log('API not available:', apiError.message);
+      setNewsItems([]);
+    }
+  }, []);
+
+  // Create news item
+  const createNewsItem = async () => {
+    if (!newsForm.title.trim() || !newsForm.content.trim()) {
+      showError('Please fill in all fields');
+      return;
+    }
+
+    try {
+      const token = await getAuthToken();
+      const response = await fetch('/api/news', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(newsForm)
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          showSuccess('News item created successfully!');
+          setNewsForm({ title: '', content: '', type: 'news' });
+          setShowNewsForm(false);
+          loadNewsItems();
+        } else {
+          showError('Error: ' + result.error);
+        }
+      } else {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+    } catch (apiError) {
+      console.log('API not available:', apiError.message);
+      showError('API not available. Please try again later.');
+    }
+  };
+
+  // Delete news item
+  const deleteNewsItem = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this news item?')) {
+      return;
+    }
+    
+    try {
+      const token = await getAuthToken();
+      const response = await fetch(`/api/news?id=${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          showSuccess('News item deleted successfully!');
+          loadNewsItems();
+        } else {
+          showError('Error: ' + result.error);
+        }
+      } else {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+    } catch (apiError) {
+      console.log('API not available:', apiError.message);
+      showError('API not available. Please try again later.');
+    }
+  };
+
   // Load data on component mount and when section changes
   useEffect(() => {
     loadGalleryImages();
     loadEnquiries();
-  }, [selectedSection, loadGalleryImages, loadEnquiries]);
+    loadNewsItems();
+  }, [selectedSection, loadGalleryImages, loadEnquiries, loadNewsItems]);
 
   return (
     <div className="min-h-screen">
@@ -336,17 +444,17 @@ const Admin = ({ onLogout }) => {
             </div>
           </div>
           
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 animate-slideInRight" style={{ animationDelay: '0.2s' }}>
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-royal-blue/20 rounded-xl flex items-center justify-center">
-                <span className="text-2xl">📰</span>
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 animate-slideInRight" style={{ animationDelay: '0.2s' }}>
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-royal-blue/20 rounded-xl flex items-center justify-center">
+                    <span className="text-2xl">📰</span>
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold text-slate-800">{newsItems.length}</h3>
+                    <p className="text-slate-600">News & Events</p>
+                  </div>
+                </div>
               </div>
-              <div>
-                <h3 className="text-2xl font-bold text-slate-800">0</h3>
-                <p className="text-slate-600">News & Events</p>
-              </div>
-            </div>
-          </div>
         </div>
         
         {/* Gallery Management */}
@@ -572,6 +680,131 @@ const Admin = ({ onLogout }) => {
                 <div className="text-6xl mb-4">📧</div>
                 <h3 className="text-xl font-semibold text-slate-600 mb-2">No enquiries found</h3>
                 <p className="text-slate-500">No enquiries have been submitted yet.</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* News Management */}
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 animate-slideInUp" style={{ animationDelay: '0.6s' }}>
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-royal-blue/20 rounded-xl flex items-center justify-center">
+                <span className="text-xl">📰</span>
+              </div>
+              <h2 className="text-2xl font-bold text-slate-800">News & Events Management</h2>
+            </div>
+            <button 
+              onClick={() => setShowNewsForm(!showNewsForm)}
+              className="bg-gradient-to-r from-royal-blue to-blue-800 text-white px-6 py-3 rounded-xl font-semibold flex items-center gap-2 hover:scale-105 transition-all duration-300 hover:from-blue-800 hover:to-royal-blue"
+            >
+              <span className="text-lg">➕</span>
+              Add News
+            </button>
+          </div>
+
+          {/* News Form */}
+          {showNewsForm && (
+            <div className="bg-white/50 backdrop-blur-sm rounded-xl p-6 mb-6 border border-slate-200 animate-fadeIn">
+              <h3 className="text-lg font-semibold text-slate-800 mb-4">Create New News Item</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Title:</label>
+                  <input
+                    type="text"
+                    value={newsForm.title}
+                    onChange={(e) => setNewsForm({...newsForm, title: e.target.value})}
+                    className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-royal-blue focus:border-transparent transition-all duration-300 bg-white/50 backdrop-blur-sm"
+                    placeholder="Enter news title"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Type:</label>
+                  <select
+                    value={newsForm.type}
+                    onChange={(e) => setNewsForm({...newsForm, type: e.target.value})}
+                    className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-royal-blue focus:border-transparent transition-all duration-300 bg-white/50 backdrop-blur-sm"
+                  >
+                    <option value="news">📰 News</option>
+                    <option value="event">🎉 Event</option>
+                    <option value="announcement">📢 Announcement</option>
+                  </select>
+                </div>
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Content:</label>
+                <textarea
+                  value={newsForm.content}
+                  onChange={(e) => setNewsForm({...newsForm, content: e.target.value})}
+                  rows={4}
+                  className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-royal-blue focus:border-transparent transition-all duration-300 bg-white/50 backdrop-blur-sm"
+                  placeholder="Enter news content"
+                />
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={createNewsItem}
+                  className="bg-gradient-to-r from-royal-blue to-blue-800 text-white px-6 py-3 rounded-xl font-semibold flex items-center gap-2 hover:scale-105 transition-all duration-300 hover:from-blue-800 hover:to-royal-blue"
+                >
+                  <span className="text-lg">💾</span>
+                  Save News
+                </button>
+                <button
+                  onClick={() => {
+                    setShowNewsForm(false);
+                    setNewsForm({ title: '', content: '', type: 'news' });
+                  }}
+                  className="bg-slate-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-slate-600 transition-all duration-300"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* News Items Display */}
+          <div className="overflow-x-auto">
+            {newsItems.length > 0 ? (
+              <div className="space-y-4">
+                {newsItems.map((item, index) => (
+                  <div 
+                    key={item.id} 
+                    className="bg-white/50 backdrop-blur-sm rounded-xl p-6 border border-slate-200 hover:shadow-lg transition-all duration-300 animate-fadeIn"
+                    style={{ animationDelay: `${index * 0.1}s` }}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                            item.type === 'news' ? 'bg-blue-100 text-blue-700' :
+                            item.type === 'event' ? 'bg-green-100 text-green-700' :
+                            'bg-purple-100 text-purple-700'
+                          }`}>
+                            {item.type === 'news' ? '📰 News' : 
+                             item.type === 'event' ? '🎉 Event' : '📢 Announcement'}
+                          </span>
+                          <span className="text-sm text-slate-500">
+                            {new Date(item.created_at).toLocaleDateString()}
+                          </span>
+                        </div>
+                        <h3 className="text-lg font-semibold text-slate-800 mb-2">{item.title}</h3>
+                        <p className="text-slate-600 line-clamp-3">{item.content}</p>
+                      </div>
+                      <button 
+                        onClick={() => deleteNewsItem(item.id)}
+                        className="ml-4 bg-red-500/80 hover:bg-red-500 text-white rounded-full w-8 h-8 text-sm flex items-center justify-center hover:scale-110 transition-all duration-300"
+                      >
+                        <span className="text-lg">×</span>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12 animate-fadeIn">
+                <div className="text-6xl mb-4">📰</div>
+                <h3 className="text-xl font-semibold text-slate-600 mb-2">No news items found</h3>
+                <p className="text-slate-500">No news items have been created yet.</p>
               </div>
             )}
           </div>

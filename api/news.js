@@ -1,8 +1,10 @@
 require('dotenv').config();
 const { createClient } = require('@supabase/supabase-js');
+const { requireAdminAuth } = require('./utils/auth');
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+// Try both old and new environment variable names
+const supabaseUrl = process.env.REACT_APP_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseKey = process.env.REACT_APP_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
   throw new Error('Missing Supabase environment variables');
@@ -14,7 +16,7 @@ export default async function handler(req, res) {
   // Enable CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
   if (req.method === 'OPTIONS') {
     res.status(200).end();
@@ -23,14 +25,23 @@ export default async function handler(req, res) {
 
   if (req.method === 'GET') {
     try {
-      const { limit = 5 } = req.query;
+      const { limit = 5, admin } = req.query;
 
-      const { data, error } = await supabase
+      let query = supabase
         .from('news_events')
         .select('*')
-        .eq('is_active', true)
-        .order('created_at', { ascending: false })
-        .limit(parseInt(limit));
+        .order('created_at', { ascending: false });
+
+      // For admin requests, don't filter by is_active
+      if (admin !== 'true') {
+        query = query.eq('is_active', true);
+      }
+
+      if (limit && admin !== 'true') {
+        query = query.limit(parseInt(limit));
+      }
+
+      const { data, error } = await query;
 
       if (error) {
         console.error('Database error:', error);
@@ -49,6 +60,10 @@ export default async function handler(req, res) {
   }
 
   if (req.method === 'POST') {
+    // Require admin authentication for POST operations
+    const isAuthenticated = await requireAdminAuth(req, res);
+    if (!isAuthenticated) return;
+
     try {
       const { title, type, content, image_url, event_date, location } = req.body;
 
@@ -92,6 +107,10 @@ export default async function handler(req, res) {
   }
 
   if (req.method === 'DELETE') {
+    // Require admin authentication for DELETE operations
+    const isAuthenticated = await requireAdminAuth(req, res);
+    if (!isAuthenticated) return;
+
     try {
       const { id } = req.query;
 
