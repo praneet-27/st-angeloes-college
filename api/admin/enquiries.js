@@ -13,20 +13,21 @@ if (!supabaseUrl || !supabaseKey) {
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default async function handler(req, res) {
-  // Enable CORS
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  try {
+    // Enable CORS
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
-  }
+    if (req.method === 'OPTIONS') {
+      res.status(200).end();
+      return;
+    }
 
-  if (req.method === 'GET') {
-    // Require admin authentication for all enquiries operations
-    const isAuthenticated = await requireAdminAuth(req, res);
-    if (!isAuthenticated) return;
+    if (req.method === 'GET') {
+      // Require admin authentication for all enquiries operations
+      const isAuthenticated = await requireAdminAuth(req, res);
+      if (!isAuthenticated) return;
 
     try {
       const { download } = req.query;
@@ -74,5 +75,12 @@ export default async function handler(req, res) {
     }
   } else {
     res.status(405).json({ error: 'Method not allowed' });
+  }
+  } catch (error) {
+    console.error('Handler error:', error);
+    res.status(500).json({ 
+      error: 'Internal server error',
+      details: error.message 
+    });
   }
 }

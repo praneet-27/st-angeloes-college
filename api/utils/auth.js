@@ -60,22 +60,32 @@ async function verifyAdminAuth(authToken) {
  * @returns {Promise<boolean>} - Returns true if authenticated, false otherwise
  */
 async function requireAdminAuth(req, res) {
-  const authHeader = req.headers.authorization;
-  
-  const { isValid, user, error } = await verifyAdminAuth(authHeader);
-  
-  if (!isValid) {
-    res.status(401).json({
+  try {
+    const authHeader = req.headers.authorization;
+    
+    const { isValid, user, error } = await verifyAdminAuth(authHeader);
+    
+    if (!isValid) {
+      res.status(401).json({
+        success: false,
+        error: error || 'Authentication required',
+        code: 'UNAUTHORIZED'
+      });
+      return false;
+    }
+
+    // Add user to request object for use in route handlers
+    req.user = user;
+    return true;
+  } catch (error) {
+    console.error('requireAdminAuth error:', error);
+    res.status(500).json({
       success: false,
-      error: error || 'Authentication required',
-      code: 'UNAUTHORIZED'
+      error: 'Authentication service error',
+      details: error.message
     });
     return false;
   }
-
-  // Add user to request object for use in route handlers
-  req.user = user;
-  return true;
 }
 
 module.exports = {
