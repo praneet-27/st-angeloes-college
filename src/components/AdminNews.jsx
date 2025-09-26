@@ -12,7 +12,9 @@ const AdminNews = ({ onLogout }) => {
     title: '',
     content: '',
     type: 'news',
-    image: null
+    image: null,
+    event_date: '',
+    location: ''
   });
   const [showNewsForm, setShowNewsForm] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -124,7 +126,9 @@ const AdminNews = ({ onLogout }) => {
         title: newsForm.title,
         content: newsForm.content,
         type: newsForm.type,
-        imageData: imageData
+        imageData: imageData,
+        event_date: newsForm.event_date || null,
+        location: newsForm.location || null
       };
 
       console.log('Sending request with imageData:', imageData ? 'present' : 'null');
@@ -143,7 +147,7 @@ const AdminNews = ({ onLogout }) => {
         const result = await response.json();
         if (result.success) {
           showSuccess('News item created successfully!');
-          setNewsForm({ title: '', content: '', type: 'news', image: null });
+          setNewsForm({ title: '', content: '', type: 'news', image: null, event_date: '', location: '' });
           setShowNewsForm(false);
           loadNewsItems();
         } else {
@@ -271,9 +275,30 @@ const AdminNews = ({ onLogout }) => {
                   className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-300 bg-white/50 backdrop-blur-sm"
                 >
                   <option value="news">📰 News</option>
-                  <option value="event">🎉 Event</option>
+                  <option value="events">🎉 Event</option>
                   <option value="announcement">📢 Announcement</option>
                 </select>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Event Date (Optional):</label>
+                <input
+                  type="date"
+                  value={newsForm.event_date}
+                  onChange={(e) => setNewsForm({...newsForm, event_date: e.target.value})}
+                  className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-300 bg-white/50 backdrop-blur-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Location (Optional):</label>
+                <input
+                  type="text"
+                  value={newsForm.location}
+                  onChange={(e) => setNewsForm({...newsForm, location: e.target.value})}
+                  className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-300 bg-white/50 backdrop-blur-sm"
+                  placeholder="Enter event location"
+                />
               </div>
             </div>
             <div className="mb-6">
@@ -346,7 +371,7 @@ const AdminNews = ({ onLogout }) => {
               <button
                 onClick={() => {
                   setShowNewsForm(false);
-                  setNewsForm({ title: '', content: '', type: 'news', image: null });
+                  setNewsForm({ title: '', content: '', type: 'news', image: null, event_date: '', location: '' });
                 }}
                 className="bg-slate-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-slate-600 transition-all duration-300"
               >
@@ -386,15 +411,25 @@ const AdminNews = ({ onLogout }) => {
                       <div className="flex items-center gap-3 mb-3">
                         <span className={`px-3 py-1 rounded-full text-sm font-medium ${
                           item.type === 'news' ? 'bg-blue-100 text-blue-700' :
-                          item.type === 'event' ? 'bg-green-100 text-green-700' :
+                          item.type === 'events' ? 'bg-green-100 text-green-700' :
                           'bg-purple-100 text-purple-700'
                         }`}>
                           {item.type === 'news' ? '📰 News' : 
-                           item.type === 'event' ? '🎉 Event' : '📢 Announcement'}
+                           item.type === 'events' ? '🎉 Event' : '📢 Announcement'}
                         </span>
                         <span className="text-sm text-slate-500">
                           {new Date(item.created_at).toLocaleDateString()}
                         </span>
+                        {item.event_date && (
+                          <span className="text-sm text-slate-500">
+                            📅 {new Date(item.event_date).toLocaleDateString()}
+                          </span>
+                        )}
+                        {item.location && (
+                          <span className="text-sm text-slate-500">
+                            📍 {item.location}
+                          </span>
+                        )}
                       </div>
                       <h3 className="text-xl font-semibold text-slate-800 mb-3">{item.title}</h3>
                       {item.image_url && (

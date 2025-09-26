@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS news_events (
     id BIGSERIAL PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     content TEXT NOT NULL,
-    type VARCHAR(20) NOT NULL CHECK (type IN ('news', 'events')),
+    type VARCHAR(20) NOT NULL CHECK (type IN ('news', 'events', 'announcement')),
     image_url TEXT,
     event_date DATE,
     location VARCHAR(255),
