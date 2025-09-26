@@ -82,62 +82,14 @@ const AdminNews = ({ onLogout }) => {
     }
   }, []);
 
-  // Handle image upload
-  const handleImageUpload = async (file) => {
-    if (!file) return null;
-
-    // Check file size (4MB = 4 * 1024 * 1024 bytes)
-    const maxSize = 4 * 1024 * 1024; // 4MB
-    if (file.size > maxSize) {
-      showError('File size too large. Please select an image smaller than 4MB.');
-      return null;
-    }
-
-    setUploadingImage(true);
-    
-    try {
+  // Convert file to base64
+  const fileToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
       const reader = new FileReader();
-      return new Promise((resolve, reject) => {
-        reader.onload = async (e) => {
-          const base64Data = e.target.result;
-          
-          try {
-            const token = await getAuthToken();
-            const response = await fetch('/api/news/upload-image', {
-              method: 'POST',
-              headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                imageUrl: base64Data,
-                filename: `news-${Date.now()}.jpg`
-              })
-            });
-            
-            if (response.ok) {
-              const result = await response.json();
-              if (result.success) {
-                resolve(result.data.imageUrl);
-              } else {
-                reject(new Error(result.error));
-              }
-            } else {
-              reject(new Error(`HTTP ${response.status}: ${response.statusText}`));
-            }
-          } catch (error) {
-            reject(error);
-          } finally {
-            setUploadingImage(false);
-          }
-        };
-        reader.readAsDataURL(file);
-      });
-    } catch (error) {
-      setUploadingImage(false);
-      showError('Error uploading image: ' + error.message);
-      return null;
-    }
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
   };
 
   // Create news item
@@ -147,13 +99,23 @@ const AdminNews = ({ onLogout }) => {
       return;
     }
 
+    // Check file size if image is provided
+    if (newsForm.image) {
+      const maxSize = 4 * 1024 * 1024; // 4MB
+      if (newsForm.image.size > maxSize) {
+        showError('File size too large. Please select an image smaller than 4MB.');
+        return;
+      }
+    }
+
+    setUploadingImage(true);
+
     try {
-      let imageUrl = null;
+      let imageData = null;
       
-      // Upload image if provided
+      // Convert image to base64 if provided
       if (newsForm.image) {
-        imageUrl = await handleImageUpload(newsForm.image);
-        if (!imageUrl) return; // Stop if image upload failed
+        imageData = await fileToBase64(newsForm.image);
       }
 
       const token = await getAuthToken();
@@ -167,7 +129,7 @@ const AdminNews = ({ onLogout }) => {
           title: newsForm.title,
           content: newsForm.content,
           type: newsForm.type,
-          image_url: imageUrl
+          imageData: imageData
         })
       });
       
@@ -186,6 +148,8 @@ const AdminNews = ({ onLogout }) => {
       }
     } catch (apiError) {
       showError('Error creating news item');
+    } finally {
+      setUploadingImage(false);
     }
   };
 

@@ -65,12 +65,48 @@ export default async function handler(req, res) {
     if (!isAuthenticated) return;
 
     try {
-      const { title, type, content, image_url, event_date, location } = req.body;
+      const { title, type, content, image_url, event_date, location, imageData } = req.body;
 
       if (!title || !type || !content) {
         return res.status(400).json({
           error: 'Missing required fields: title, type, and content are required'
         });
+      }
+
+      let finalImageUrl = image_url;
+
+      // Handle image upload if imageData is provided
+      if (imageData) {
+        try {
+          const timestamp = Date.now();
+          const filename = `news-${timestamp}.jpg`;
+
+          // Convert base64 data URL to buffer
+          const base64Data = imageData.split(',')[1]; // Remove data:image/jpeg;base64, prefix
+          const buffer = Buffer.from(base64Data, 'base64');
+
+          // Upload to Supabase Storage using admin client
+          const { data: uploadData, error: uploadError } = await supabaseAdmin.storage
+            .from('news-images')
+            .upload(filename, buffer, {
+              contentType: 'image/jpeg',
+              upsert: false
+            });
+
+          if (uploadError) {
+            console.error('Storage upload error:', uploadError);
+            throw uploadError;
+          }
+
+          const { data: { publicUrl } } = supabaseAdmin.storage
+            .from('news-images')
+            .getPublicUrl(filename);
+
+          finalImageUrl = publicUrl;
+        } catch (uploadError) {
+          console.error('Image upload error:', uploadError);
+          return res.status(500).json({ error: 'Failed to upload image' });
+        }
       }
 
       const { data, error } = await supabase
@@ -80,7 +116,7 @@ export default async function handler(req, res) {
             title,
             type,
             content,
-            image_url,
+            image_url: finalImageUrl,
             event_date,
             location,
             is_active: true,
