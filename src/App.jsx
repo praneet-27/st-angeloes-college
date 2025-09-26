@@ -14,7 +14,6 @@ import Facilities from './components/Facilities';
 import ContactUs from './components/ContactUs';
 import Gallery from './components/Gallery';
 import Careers from './components/Careers';
-import AdminLayout from './components/AdminLayout';
 import ProtectedAdmin from './components/ProtectedAdmin';
 import Footer from './components/Footer';
 import FloatingEnquiryButton from './components/FloatingEnquiryButton';
