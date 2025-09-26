@@ -85,10 +85,7 @@ const ProtectedAdmin = () => {
   return (
     <div className="bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen">
       <Routes>
-        <Route path="/" element={<Admin onLogout={handleLogout} />} />
-        <Route path="/gallery" element={<Admin onLogout={handleLogout} />} />
-        <Route path="/enquiries" element={<Admin onLogout={handleLogout} />} />
-        <Route path="/news" element={<Admin onLogout={handleLogout} />} />
+        <Route path="/*" element={<Admin onLogout={handleLogout} />} />
       </Routes>
     </div>
   );
