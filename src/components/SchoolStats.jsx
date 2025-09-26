@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 
 const SchoolStats = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -10,12 +10,12 @@ const SchoolStats = () => {
   });
   const sectionRef = useRef(null);
 
-  const stats = [
+  const stats = useMemo(() => [
     { key: 'students', target: 2500, suffix: '+', label: 'Current Students' },
     { key: 'teachers', target: 150, suffix: '+', label: 'Dedicated Teachers' },
     { key: 'alumni', target: 10000, suffix: '+', label: 'Alumni Network' },
     { key: 'years', target: 35, suffix: '+', label: 'Years of Excellence' }
-  ];
+  ], []);
 
   useEffect(() => {
     const observer = new IntersectionObserver(

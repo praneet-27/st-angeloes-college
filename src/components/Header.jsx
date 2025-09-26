@@ -28,22 +28,28 @@ const Header = () => {
             <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
               <a 
                 className="flex items-center gap-2 hover:text-primary/80 dark:hover:text-white transition-colors" 
-                href="tel:+91-522-1234567"
+                href="tel:+91 8090097847"
               >
                 <span className="material-symbols-outlined text-base">call</span>
-                <span className="font-medium">+91-522-1234567</span>
+                <span className="font-medium">+91 8090097847</span>
               </a>
               <a 
                 className="flex items-center gap-2 hover:text-primary/80 dark:hover:text-white transition-colors" 
-                href="mailto:info@stangeloslucknow.com"
+                href="mailto:st.angeloes2013@gmail.com"
               >
                 <span className="material-symbols-outlined text-base">mail</span>
-                <span className="font-medium">info@stangeloslucknow.com</span>
+                <span className="font-medium">st.angeloes2013@gmail.com</span>
               </a>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-base">location_on</span>
-              <span className="font-medium text-center">Vibutikhand, Gomti Nagar, Lucknow, UP 226010</span>
+            <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-base">location_on</span>
+                <span className="font-medium text-center">SHANTI NAGAR, NEAR AIRPORT, KANPUR ROAD, LUCKNOW</span>
+              </div>
+              <div className="flex items-center gap-2 bg-primary/20 dark:bg-primary/30 px-3 py-1 rounded-full">
+                <span className="material-symbols-outlined text-base">school</span>
+                <span className="font-semibold text-primary dark:text-primary">CISCE (ICSE Board)</span>
+              </div>
             </div>
           </div>
         </div>
@@ -60,7 +66,12 @@ const Header = () => {
                   alt="St. Angeloes College Logo" 
                   className="w-10 h-10 object-contain"
                 />
-                <h1 className="text-xl font-bold text-slate-900 dark:text-white">St. Angeloes College</h1>
+                <h1 className="text-xl font-bold text-purple-800 dark:text-purple-300" style={{
+                  fontFamily: "'Playfair Display', 'Times New Roman', serif",
+                  textShadow: "1px 1px 0px white, -1px -1px 0px white, 1px -1px 0px white, -1px 1px 0px white",
+                  letterSpacing: "0.3px",
+                  fontStyle: "italic"
+                }}>St. Angeloes College</h1>
               </Link>
               
               {/* Desktop Navigation */}

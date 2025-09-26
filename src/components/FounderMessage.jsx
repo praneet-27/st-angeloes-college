@@ -3,7 +3,7 @@ import React, { useEffect, useState, useRef } from 'react';
 const FounderMessage = () => {
   const [isVisible, setIsVisible] = useState(false);
   const sectionRef = useRef(null);
-  const founderImageUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuAJtnMglYvHr0bjT-_n3hya3_5tcYNXGhExCkHqbNY4SFG9eYNe18NBzxmHRgZ7Bq0-Hpuknh7jK4N4v07Dw06AvX7ArCx6pxGE9To4O-f5gxhclj5bBfMXX16TWh3dEmtLiE8g4NkfyMIw6O_tkrapDCiRsABSz_9kY9ZikUWw4FScWGX2jKiCw3hLMCjKsHiH7gs2PdbqrpzaIw6HnyEy0yUOKOEuA6ZGRcM-1xRztoD_6o2p0Pe4Fz74A-M9nRrSLQuJJO3PG5Fs";
+  const founderImageUrl = "/images/founder.jpeg";
 
   useEffect(() => {
     const observer = new IntersectionObserver(

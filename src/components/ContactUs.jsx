@@ -248,15 +248,33 @@ const ContactUs = () => {
             >
               {/* Map */}
               <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-xl border border-slate-200 dark:border-slate-700">
-                <iframe
-                  className="w-full h-80 rounded-xl"
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3559.61391741743!2d80.9461656150444!3d26.85176198315486!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x399bfd0813089e03%3A0x729221190e38b335!2sLucknow%2C%20Uttar%20Pradesh%2C%20India!5e0!3m2!1sen!2sus!4v1684321567890!5m2!1sen!2sus"
-                  title="St. Angelo's College Location Map"
-                  style={{ border: 0 }}
-                  allowFullScreen=""
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                ></iframe>
+                <a
+                  href="https://www.google.com/maps/search/St.+Angeloes+College,+39,+Shanti+Nagar,+Sarojini+Nagar,+Lucknow,+Uttar+Pradesh+226009"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block relative group cursor-pointer"
+                  title="Click to open in Google Maps"
+                >
+                  <iframe
+                    className="w-full h-80 rounded-xl transition-all duration-300 group-hover:opacity-90"
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3559.61391741743!2d80.9461656150444!3d26.85176198315486!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x399bfd0813089e03%3A0x729221190e38b335!2sSt.%20Angeloes%20College%2C%2039%2C%20Shanti%20Nagar%2C%20Sarojini%20Nagar%2C%20Lucknow%2C%20Uttar%20Pradesh%20226009!5e0!3m2!1sen!2sus!4v1684321567890!5m2!1sen!2sus"
+                    title="St. Angeloes College Location Map - 39, Shanti Nagar, Sarojini Nagar, Lucknow"
+                    style={{ border: 0 }}
+                    allowFullScreen=""
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                  ></iframe>
+                  
+                  {/* Click overlay with instructions */}
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300 rounded-xl flex items-center justify-center">
+                    <div className="opacity-0 group-hover:opacity-100 transition-all duration-300 bg-white/90 dark:bg-slate-800/90 px-4 py-2 rounded-lg shadow-lg">
+                      <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                        <span className="material-symbols-outlined text-lg">open_in_new</span>
+                        <span className="text-sm font-medium">Click to open in Google Maps</span>
+                      </div>
+                    </div>
+                  </div>
+                </a>
               </div>
 
               {/* Contact Details */}
@@ -265,18 +283,18 @@ const ContactUs = () => {
                   <span className="text-primary text-xl mt-1 group-hover:scale-110 transition-transform duration-300">📍</span>
                   <div>
                     <strong className="text-slate-900 dark:text-white">St. Angeloes College</strong><br/>
-                    123 Education Lane, Lucknow, Uttar Pradesh, India
+                    SHANTI NAGAR, NEAR AIRPORT, KANPUR ROAD, LUCKNOW
                   </div>
                 </div>
 
                 <div className="flex gap-4 p-4 bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 hover:shadow-xl transition-all duration-300 group">
                   <span className="text-primary text-xl mt-1 group-hover:scale-110 transition-transform duration-300">📞</span>
-                  <div>+91-987-654-3210, +91-987-654-3211</div>
+                  <div>+91 8090097847, +91 7388891100, +91 7860915240</div>
                 </div>
 
                 <div className="flex gap-4 p-4 bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 hover:shadow-xl transition-all duration-300 group">
                   <span className="text-primary text-xl mt-1 group-hover:scale-110 transition-transform duration-300">✉️</span>
-                  <div>info@stangelos.edu.in</div>
+                  <div>st.angeloes2013@gmail.com</div>
                 </div>
 
                 <div className="flex gap-4 p-4 bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 hover:shadow-xl transition-all duration-300 group">

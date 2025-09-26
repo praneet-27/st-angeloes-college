@@ -57,15 +57,15 @@ const Footer = () => {
             <ul className="space-y-2 text-sm text-slate-300">
               <li className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-base">location_on</span>
-                <span>Vibutikhand, Gomti Nagar, Lucknow</span>
+                <span>SHANTI NAGAR, NEAR AIRPORT, KANPUR ROAD, LUCKNOW</span>
               </li>
               <li className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-base">call</span>
-                <span>+91-522-1234567</span>
+                <span>+91 8090097847</span>
               </li>
               <li className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-base">mail</span>
-                <span>info@stangeloslucknow.com</span>
+                <span>st.angeloes2013@gmail.com</span>
               </li>
             </ul>
           </div>
