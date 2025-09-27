@@ -183,7 +183,14 @@ const Careers = () => {
                         >
                           View Details
                         </button>
-                        <button className="flex items-center justify-center rounded-lg bg-primary px-6 py-3 text-sm font-medium text-white transition-all duration-300 hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transform hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl">
+                        <button 
+                          onClick={() => {
+                            const subject = `Application for ${job.title}`;
+                            const body = `Dear Hiring Manager,\n\nI am writing to express my interest in the ${job.title} position at St. Angeloes College. Please find my application materials attached.\n\nBest regards,\n[Your Name]`;
+                            window.open(`mailto:st.angeloes2013@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`);
+                          }}
+                          className="flex items-center justify-center rounded-lg bg-primary px-6 py-3 text-sm font-medium text-white transition-all duration-300 hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transform hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl"
+                        >
                           Apply Now
                         </button>
                       </div>
