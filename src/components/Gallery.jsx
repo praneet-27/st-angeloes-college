@@ -290,21 +290,33 @@ const Gallery = () => {
                       </div>
                     ) : (
                       // Regular image with click functionality
-                      <div
-                        className="w-full h-full bg-center bg-no-repeat aspect-square bg-cover transition-transform duration-500 group-hover:scale-110 cursor-pointer"
-                        style={{ backgroundImage: `url("${item.image_url}")` }}
-                        onClick={() => openImageModal(item.image_url, `${activeTab} Image`)}
-                        title="Click to view full size"
-                      ></div>
-                    )}
-                    <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    
-                    {/* Hover overlay with icon */}
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
-                        <span className="text-white text-xl">{activeTab === 'Videos' ? '▶️' : '🔍'}</span>
+                      <div className="relative w-full h-full">
+                        <div
+                          className="w-full h-full bg-center bg-no-repeat aspect-square bg-cover transition-transform duration-500 group-hover:scale-110"
+                          style={{ backgroundImage: `url("${item.image_url}")` }}
+                        ></div>
+                        
+                        {/* Clickable overlay for image */}
+                        <div 
+                          className="absolute inset-0 cursor-pointer z-10"
+                          onClick={() => {
+                            console.log('Image clicked:', item.image_url);
+                            openImageModal(item.image_url, `${activeTab} Image`);
+                          }}
+                          title="Click to view full size"
+                        >
+                          {/* Dark overlay on hover */}
+                          <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                          
+                          {/* Hover overlay with icon */}
+                          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                            <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
+                              <span className="text-white text-xl">🔍</span>
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
                 ))}
               </div>
