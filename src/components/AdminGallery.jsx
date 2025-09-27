@@ -494,12 +494,8 @@ const AdminGallery = ({ onLogout }) => {
                 <div key={item.id} className="relative group">
                   <div className="aspect-square overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 group-hover:scale-105">
                     {selectedSection === 'Videos' ? (
-                      // Video thumbnail with platform icon
-                      <div 
-                        className="relative w-full h-full cursor-pointer"
-                        onClick={() => window.open(item.image_url, '_blank')}
-                        title="Click to open video"
-                      >
+                      // Video thumbnail with platform icon - restructured for better click handling
+                      <div className="relative w-full h-full">
                         <img 
                           src={getVideoThumbnail(item.image_url)} 
                           alt={`${item.section} video`} 
@@ -508,46 +504,63 @@ const AdminGallery = ({ onLogout }) => {
                             e.target.src = '/images/placeholder-video.jpg';
                           }}
                         />
-                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300"></div>
-                        {/* Platform icon overlay */}
-                        <div className="absolute top-2 left-2 bg-black/70 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm">
-                          {getVideoPlatformIcon(item.image_url)}
-                        </div>
-                        {/* Play button overlay */}
-                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                          <div className="bg-white/90 rounded-full p-3 transform group-hover:scale-110 transition-transform duration-300">
-                            <svg className="w-6 h-6 text-slate-700" fill="currentColor" viewBox="0 0 24 24">
-                              <path d="M8 5v14l11-7z"/>
-                            </svg>
+                        
+                        {/* Clickable overlay for video */}
+                        <div 
+                          className="absolute inset-0 cursor-pointer z-10"
+                          onClick={() => {
+                            console.log('Video clicked:', item.image_url);
+                            window.open(item.image_url, '_blank');
+                          }}
+                          title="Click to open video"
+                        >
+                          {/* Dark overlay on hover */}
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300"></div>
+                          
+                          {/* Platform icon overlay */}
+                          <div className="absolute top-2 left-2 bg-black/70 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm pointer-events-none">
+                            {getVideoPlatformIcon(item.image_url)}
+                          </div>
+                          
+                          {/* Play button overlay */}
+                          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                            <div className="bg-white/90 rounded-full p-3 transform group-hover:scale-110 transition-transform duration-300">
+                              <svg className="w-6 h-6 text-slate-700" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M8 5v14l11-7z"/>
+                              </svg>
+                            </div>
+                          </div>
+                          
+                          {/* Video URL preview on hover */}
+                          <div className="absolute bottom-2 left-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                            <div className="bg-black/80 text-white text-xs p-2 rounded truncate">
+                              Click to open: {item.image_url}
+                            </div>
+                          </div>
+                          
+                          {/* Click hint */}
+                          <div className="absolute top-2 right-12 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                            <div className="bg-blue-500/80 text-white text-xs px-2 py-1 rounded-full">
+                              🔗 Open
+                            </div>
                           </div>
                         </div>
-                        {/* Video URL preview on hover */}
-                        <div className="absolute bottom-2 left-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                          <div className="bg-black/80 text-white text-xs p-2 rounded truncate">
-                            Click to open: {item.image_url}
-                          </div>
-                        </div>
-                        {/* Click hint */}
-                        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                          <div className="bg-blue-500/80 text-white text-xs px-2 py-1 rounded-full">
-                            🔗 Open
-                          </div>
-                        </div>
+                        
+                        {/* Delete button - positioned above the clickable overlay */}
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation(); // Prevent video click when deleting
+                            deleteImage(item.id);
+                          }} 
+                          className="absolute top-2 right-2 bg-red-500/80 hover:bg-red-500 text-white rounded-full w-8 h-8 text-sm opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center hover:scale-110 z-20"
+                        >
+                          <span className="text-lg">×</span>
+                        </button>
                       </div>
                     ) : (
                       // Regular image
                       <img src={item.image_url} alt={item.section} className="w-full h-full object-cover" />
                     )}
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300"></div>
-                    <button 
-                      onClick={(e) => {
-                        e.stopPropagation(); // Prevent video click when deleting
-                        deleteImage(item.id);
-                      }} 
-                      className="absolute top-2 right-2 bg-red-500/80 hover:bg-red-500 text-white rounded-full w-8 h-8 text-sm opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center hover:scale-110"
-                    >
-                      <span className="text-lg">×</span>
-                    </button>
                   </div>
                 </div>
               ))}
