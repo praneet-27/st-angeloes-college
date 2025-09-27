@@ -23,24 +23,49 @@ const EnquiryModal = ({ isOpen, onClose }) => {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    setIsSubmitting(false);
-    setIsSubmitted(true);
-    
-    // Reset form after 3 seconds
-    setTimeout(() => {
-      setIsSubmitted(false);
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        class: '',
-        message: ''
+    try {
+      // Submit to API
+      const response = await fetch('/api/enquiry', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          classInterested: formData.class,
+          message: formData.message
+        })
       });
-      onClose();
-    }, 3000);
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        setIsSubmitting(false);
+        setIsSubmitted(true);
+        
+        // Reset form after 3 seconds
+        setTimeout(() => {
+          setIsSubmitted(false);
+          setFormData({
+            name: '',
+            email: '',
+            phone: '',
+            class: '',
+            message: ''
+          });
+          onClose();
+        }, 3000);
+      } else {
+        throw new Error(result.error || 'Failed to submit enquiry');
+      }
+    } catch (error) {
+      console.error('Error submitting enquiry:', error);
+      setIsSubmitting(false);
+      // Show error message to user
+      alert('Failed to submit enquiry. Please try again later.');
+    }
   };
 
   if (!isOpen) return null;

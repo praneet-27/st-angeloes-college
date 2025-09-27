@@ -42,19 +42,47 @@ const ContactUs = () => {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    setIsSubmitting(false);
-    setIsSubmitted(true);
-    
-    // Reset form after 3 seconds
-    setTimeout(() => {
-      setIsSubmitted(false);
-      // Reset form fields
-      const form = e.target;
-      form.reset();
-    }, 3000);
+    try {
+      const formData = new FormData(e.target);
+      const data = {
+        name: formData.get('name'),
+        email: formData.get('email'),
+        phone: formData.get('phone'),
+        classInterested: formData.get('class'),
+        message: formData.get('message')
+      };
+
+      // Submit to API
+      const response = await fetch('/api/enquiry', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        setIsSubmitting(false);
+        setIsSubmitted(true);
+        
+        // Reset form after 3 seconds
+        setTimeout(() => {
+          setIsSubmitted(false);
+          // Reset form fields
+          const form = e.target;
+          form.reset();
+        }, 3000);
+      } else {
+        throw new Error(result.error || 'Failed to submit message');
+      }
+    } catch (error) {
+      console.error('Error submitting contact form:', error);
+      setIsSubmitting(false);
+      // Show error message to user
+      alert('Failed to submit message. Please try again later.');
+    }
   };
 
   return (
