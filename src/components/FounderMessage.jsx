@@ -41,10 +41,10 @@ const FounderMessage = () => {
           </p>
           <div className="mt-6 transition-all duration-1000 ease-out transform" style={{ transitionDelay: '800ms' }}>
             <p className="text-lg font-semibold text-primary dark:text-white">
-              — Rev. Fr. Angelo Fernandes
+              — Mr. Virendra Upadhyay
             </p>
             <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-              Founder & Principal
+              Founder & Director
             </p>
           </div>
         </div>
