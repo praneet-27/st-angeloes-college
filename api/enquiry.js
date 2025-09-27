@@ -39,7 +39,8 @@ export default async function handler(req, res) {
             email,
             phone,
             class_interested: classInterested,
-            message
+            message,
+            status: 'new'
           }
         ])
         .select();
