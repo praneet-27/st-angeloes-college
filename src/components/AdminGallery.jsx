@@ -119,69 +119,46 @@ const AdminGallery = ({ onLogout }) => {
         };
         await submitToAPI(requestBody, progressInterval);
       } else {
-        // For images, upload directly to Supabase Storage
-        await uploadImageDirectly(selectedFile, selectedSection, progressInterval);
+        // For images, convert to base64
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+          try {
+            console.log('FileReader onload - starting base64 conversion');
+            const base64Data = e.target.result;
+            console.log('Base64 data length:', base64Data.length);
+            const requestBody = {
+              section: selectedSection,
+              imageUrl: base64Data
+            };
+            console.log('Calling submitToAPI for image');
+            await submitToAPI(requestBody, progressInterval);
+          } catch (error) {
+            console.error('Error in FileReader onload:', error);
+            clearInterval(progressInterval);
+            showError('Error uploading item: ' + error.message);
+            setUploading(false);
+            setUploadProgress(0);
+          }
+        };
+        reader.onerror = (error) => {
+          console.error('FileReader error:', error);
+          clearInterval(progressInterval);
+          showError('Error reading file');
+          setUploading(false);
+          setUploadProgress(0);
+        };
+        reader.onloadstart = () => {
+          console.log('FileReader started reading file');
+        };
+        reader.onloadend = () => {
+          console.log('FileReader finished reading file');
+        };
+        console.log('Starting FileReader.readAsDataURL');
+        reader.readAsDataURL(selectedFile);
       }
     } catch (error) {
       clearInterval(progressInterval);
       showError('Error uploading item: ' + error.message);
-      setUploading(false);
-      setUploadProgress(0);
-    }
-  };
-
-  // Upload image directly to Supabase Storage
-  const uploadImageDirectly = async (file, section, progressInterval) => {
-    try {
-      console.log('Uploading image directly to Supabase Storage');
-      
-      const token = await getAuthToken();
-      if (!token) {
-        clearInterval(progressInterval);
-        showError('Authentication required. Please login again.');
-        setUploading(false);
-        setUploadProgress(0);
-        return;
-      }
-
-      const timestamp = Date.now();
-      const filename = `gallery-${section}-${timestamp}.jpg`;
-      
-      // Upload directly to Supabase Storage
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('gallery-images')
-        .upload(filename, file, {
-          cacheControl: '3600',
-          upsert: false
-        });
-
-      if (uploadError) {
-        console.error('Supabase Storage upload error:', uploadError);
-        throw uploadError;
-      }
-
-      console.log('Upload successful:', uploadData);
-
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('gallery-images')
-        .getPublicUrl(filename);
-
-      console.log('Public URL:', publicUrl);
-
-      // Now add to database via API
-      const requestBody = {
-        section: section,
-        imageUrl: publicUrl,
-        storagePath: uploadData.path
-      };
-
-      await submitToAPI(requestBody, progressInterval);
-
-    } catch (error) {
-      console.error('Direct upload error:', error);
-      clearInterval(progressInterval);
-      showError('Error uploading image: ' + error.message);
       setUploading(false);
       setUploadProgress(0);
     }

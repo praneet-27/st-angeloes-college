@@ -81,40 +81,33 @@ export default async function handler(req, res) {
       let storagePath = null;
 
       if (imageUrl) {
-        // Check if imageUrl is base64 (old method) or direct URL (new method)
-        if (imageUrl.startsWith('data:image/')) {
-          // Handle base64 image upload (old method for smaller files)
-          const timestamp = Date.now();
-          const filename = `gallery-${section}-${timestamp}.jpg`;
+        // Handle image upload
+        const timestamp = Date.now();
+        const filename = `gallery-${section}-${timestamp}.jpg`;
 
-          // Convert base64 data URL to buffer
-          const base64Data = imageUrl.split(',')[1]; // Remove data:image/jpeg;base64, prefix
-          const buffer = Buffer.from(base64Data, 'base64');
+        // Convert base64 data URL to buffer
+        const base64Data = imageUrl.split(',')[1]; // Remove data:image/jpeg;base64, prefix
+        const buffer = Buffer.from(base64Data, 'base64');
 
-          // Upload to Supabase Storage using admin client
-          const { data: uploadData, error: uploadError } = await supabaseAdmin.storage
-            .from('gallery-images')
-            .upload(filename, buffer, {
-              contentType: 'image/jpeg',
-              upsert: false
-            });
+        // Upload to Supabase Storage using admin client
+        const { data: uploadData, error: uploadError } = await supabaseAdmin.storage
+          .from('gallery-images')
+          .upload(filename, buffer, {
+            contentType: 'image/jpeg',
+            upsert: false
+          });
 
-          if (uploadError) {
-            console.error('Storage upload error:', uploadError);
-            throw uploadError;
-          }
-
-          const { data: { publicUrl } } = supabaseAdmin.storage
-            .from('gallery-images')
-            .getPublicUrl(filename);
-
-          finalImageUrl = publicUrl;
-          storagePath = uploadData.path;
-        } else {
-          // Handle direct URL (already uploaded to Supabase Storage)
-          finalImageUrl = imageUrl;
-          storagePath = req.body.storagePath || null;
+        if (uploadError) {
+          console.error('Storage upload error:', uploadError);
+          throw uploadError;
         }
+
+        const { data: { publicUrl } } = supabaseAdmin.storage
+          .from('gallery-images')
+          .getPublicUrl(filename);
+
+        finalImageUrl = publicUrl;
+        storagePath = uploadData.path;
       } else if (videoUrl) {
         // Handle video URL - store the URL directly
         finalImageUrl = videoUrl;
