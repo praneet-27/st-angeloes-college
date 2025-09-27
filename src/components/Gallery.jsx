@@ -10,6 +10,8 @@ const Gallery = () => {
   const [activeTab, setActiveTab] = useState('Photos');
   const [galleryData, setGalleryData] = useState({});
   const [loading, setLoading] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const sectionRef = useRef(null);
 
   // Helper function to get video thumbnail
@@ -67,6 +69,18 @@ const Gallery = () => {
       return '🎬'; // Vimeo icon
     }
     return '🎥'; // Default video icon
+  };
+
+  // Open image modal
+  const openImageModal = (imageUrl, title) => {
+    setSelectedImage({ url: imageUrl, title: title });
+    setIsImageModalOpen(true);
+  };
+
+  // Close image modal
+  const closeImageModal = () => {
+    setIsImageModalOpen(false);
+    setSelectedImage(null);
   };
 
   // Fetch gallery data for a specific section
@@ -232,11 +246,7 @@ const Gallery = () => {
                   >
                     {activeTab === 'Videos' ? (
                       // Video thumbnail with click functionality
-                      <div 
-                        className="relative w-full h-full cursor-pointer"
-                        onClick={() => window.open(item.image_url, '_blank')}
-                        title="Click to open video"
-                      >
+                      <div className="relative w-full h-full">
                         <img
                           src={getVideoThumbnail(item.image_url)}
                           alt={`${activeTab} video`}
@@ -252,27 +262,39 @@ const Gallery = () => {
                           {getVideoPlatformIcon(item.image_url)}
                         </div>
                         
-                        {/* Play button overlay */}
-                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                          <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center transform group-hover:scale-110 transition-transform duration-300">
-                            <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                              <path d="M8 5v14l11-7z"/>
-                            </svg>
+                        {/* Clickable overlay for video */}
+                        <div 
+                          className="absolute inset-0 cursor-pointer z-10"
+                          onClick={() => {
+                            console.log('Video clicked:', item.image_url);
+                            window.open(item.image_url, '_blank');
+                          }}
+                          title="Click to open video"
+                        >
+                          {/* Play button overlay */}
+                          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                            <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center transform group-hover:scale-110 transition-transform duration-300">
+                              <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M8 5v14l11-7z"/>
+                              </svg>
+                            </div>
                           </div>
-                        </div>
-                        
-                        {/* Click hint */}
-                        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                          <div className="bg-blue-500/80 text-white text-xs px-2 py-1 rounded-full">
-                            🔗 Open
+                          
+                          {/* Click hint */}
+                          <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                            <div className="bg-blue-500/80 text-white text-xs px-2 py-1 rounded-full">
+                              🔗 Open
+                            </div>
                           </div>
                         </div>
                       </div>
                     ) : (
-                      // Regular image
+                      // Regular image with click functionality
                       <div
-                        className="w-full h-full bg-center bg-no-repeat aspect-square bg-cover transition-transform duration-500 group-hover:scale-110"
+                        className="w-full h-full bg-center bg-no-repeat aspect-square bg-cover transition-transform duration-500 group-hover:scale-110 cursor-pointer"
                         style={{ backgroundImage: `url("${item.image_url}")` }}
+                        onClick={() => openImageModal(item.image_url, `${activeTab} Image`)}
+                        title="Click to view full size"
                       ></div>
                     )}
                     <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -300,16 +322,32 @@ const Gallery = () => {
             )}
           </div>
 
-          {/* Load More Button - only show if there are items */}
-          {galleryData[activeTab] && galleryData[activeTab].length > 0 && (
-            <div className="text-center">
-              <button className="bg-primary text-white font-bold py-3 px-8 rounded-xl hover:bg-primary/90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95">
-                Load More
-              </button>
-            </div>
-          )}
         </div>
       </div>
+
+      {/* Image Modal */}
+      {isImageModalOpen && selectedImage && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div 
+            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+            onClick={closeImageModal}
+          ></div>
+          <div className="relative bg-white dark:bg-slate-800 rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden animate-scaleIn">
+            <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{selectedImage.title}</h3>
+              <button
+                onClick={closeImageModal}
+                className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors"
+              >
+                <span className="material-symbols-outlined text-slate-500 dark:text-slate-400">close</span>
+              </button>
+            </div>
+            <div className="p-2 max-h-[calc(90vh-60px)] overflow-y-auto">
+              <img src={selectedImage.url} alt={selectedImage.title} className="max-w-full h-auto rounded-md mx-auto" />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
