@@ -5,7 +5,113 @@ const Gallery = () => {
   const [tabsVisible, setTabsVisible] = useState(false);
   const [galleryVisible, setGalleryVisible] = useState(false);
   const [activeTab, setActiveTab] = useState('Photos');
+  const [galleryData, setGalleryData] = useState({});
+  const [loading, setLoading] = useState(false);
   const sectionRef = useRef(null);
+
+  const galleryTabs = ['Photos', 'Videos', 'Annual Day', 'Sports', 'Cultural Events', 'Classroom'];
+
+  // Helper function to get video thumbnail
+  const getVideoThumbnail = (videoUrl) => {
+    if (!videoUrl) return '/images/placeholder-video.jpg';
+    
+    // YouTube thumbnail
+    if (videoUrl.includes('youtube.com/watch') || videoUrl.includes('youtu.be/')) {
+      let videoId = '';
+      if (videoUrl.includes('youtube.com/watch')) {
+        videoId = videoUrl.split('v=')[1]?.split('&')[0];
+      } else if (videoUrl.includes('youtu.be/')) {
+        videoId = videoUrl.split('youtu.be/')[1]?.split('?')[0];
+      }
+      if (videoId) {
+        return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+      }
+    }
+    
+    // Instagram thumbnail using multiple fallback methods
+    if (videoUrl.includes('instagram.com/')) {
+      // Try to extract Instagram post ID
+      const instagramMatch = videoUrl.match(/instagram\.com\/(p|reel)\/([^/?]+)/);
+      if (instagramMatch) {
+        const postId = instagramMatch[2];
+        
+        // For now, let's use a beautiful Instagram-style placeholder
+        // In the future, we could implement a backend service to fetch Instagram thumbnails
+        return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDMwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9ImlnR3JhZCIgeDE9IjAlIiB5MT0iMCUiIHgyPSIxMDAlIiB5Mj0iMTAwJSI+CjxzdG9wIG9mZnNldD0iMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiNGRjYwODU7c3RvcC1vcGFjaXR5OjEiIC8+CjxzdG9wIG9mZnNldD0iMjUlIiBzdHlsZT0ic3RvcC1jb2xvcjojRkZDNDUzO3N0b3Atb3BhY2l0eToxIiAvPgo8c3RvcCBvZmZzZXQ9IjUwJSIgc3R5bGU9InN0b3AtY29sb3I6I0YzNDk1NTtzdG9wLW9wYWNpdHk6MSIgLz4KPHN0b3Agb2Zmc2V0PSI3NSUiIHN0eWxlPSJzdG9wLWNvbG9yOiNFMTMwQjU7c3RvcC1vcGFjaXR5OjEiIC8+CjxzdG9wIG9mZnNldD0iMTAwJSIgc3R5bGU9InN0b3AtY29sb3I6I0M4MzJBNTtzdG9wLW9wYWNpdHk6MSIgLz4KPC9saW5lYXJHcmFkaWVudD4KPC9kZWZzPgo8cmVjdCB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0idXJsKCNpZ0dyYWQpIi8+CjxjaXJjbGUgY3g9IjE1MCIgY3k9IjEyMCIgcj0iNDAiIGZpbGw9IndoaXRlIiBmaWxsLW9wYWNpdHk9IjAuOSIvPgo8Y2lyY2xlIGN4PSIxNTAiIGN5PSIxMzAiIHI9IjE1IiBmaWxsPSJ3aGl0ZSIgZmlsbC1vcGFjaXR5PSIwLjkiLz4KPHN2ZyB4PSIxMjAiIHk9IjE2MCIgd2lkdGg9IjYwIiBoZWlnaHQ9IjYwIiBmaWxsPSJ3aGl0ZSIgZmlsbC1vcGFjaXR5PSIwLjciPgo8cGF0aCBkPSJNMzAgMTBMMjAgMjBMMTAgMTBMMjAgMEwzMCAxMFoiLz4KPC9zdmc+Cjx0ZXh0IHg9IjE1MCIgeT0iMjAwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTIiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsLW9wYWNpdHk9IjAuOCIgZHk9Ii4zZW0iPkluc3RhZ3JhbTwvdGV4dD4KPC9zdmc+';
+      }
+      
+      // Generic Instagram placeholder if URL doesn't match expected pattern
+      return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDMwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjRjM0OTU1Ii8+Cjx0ZXh0IHg9IjE1MCIgeT0iMTUwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+SW5zdGFncmFtPC90ZXh0Pgo8L3N2Zz4K';
+    }
+    
+    // Vimeo thumbnail (if needed in future)
+    if (videoUrl.includes('vimeo.com/')) {
+      const vimeoMatch = videoUrl.match(/vimeo\.com\/(\d+)/);
+      if (vimeoMatch) {
+        const videoId = vimeoMatch[1];
+        return `https://vumbnail.com/${videoId}.jpg`;
+      }
+    }
+    
+    // Default thumbnail
+    return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDMwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjNjY2Ii8+CjxwYXRoIGQ9Ik0xMjAgMTMwSDE4MFYxNzBIMTIwVjEzMFoiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik0xNDAgMTMwTDE3MCAxNTBMMTQwIDE3MFYxMzBaIiBmaWxsPSIjNjY2Ii8+Cjwvc3ZnPgo=';
+  };
+
+  // Helper function to get video platform icon
+  const getVideoPlatformIcon = (videoUrl) => {
+    if (videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be/')) {
+      return '🎥'; // YouTube icon
+    } else if (videoUrl.includes('instagram.com')) {
+      return '📷'; // Instagram icon
+    } else if (videoUrl.includes('vimeo.com')) {
+      return '🎬'; // Vimeo icon
+    }
+    return '🎥'; // Default video icon
+  };
+
+  // Fetch gallery data for a specific section
+  const fetchGallerySection = async (section) => {
+    try {
+      setLoading(true);
+      const response = await fetch(`/api/gallery?section=${section}`);
+      const result = await response.json();
+      
+      if (response.ok && result.success) {
+        setGalleryData(prev => ({
+          ...prev,
+          [section]: result.data || []
+        }));
+      } else {
+        console.error(`Failed to fetch ${section}:`, result.error);
+        setGalleryData(prev => ({
+          ...prev,
+          [section]: []
+        }));
+      }
+    } catch (error) {
+      console.error(`Error fetching ${section}:`, error);
+      setGalleryData(prev => ({
+        ...prev,
+        [section]: []
+      }));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch all gallery sections on component mount
+  useEffect(() => {
+    galleryTabs.forEach(section => {
+      fetchGallerySection(section);
+    });
+  }, []);
+
+  // Fetch data when tab changes
+  useEffect(() => {
+    if (!galleryData[activeTab]) {
+      fetchGallerySection(activeTab);
+    }
+  }, [activeTab]);
 
   useEffect(() => {
     // Page load animations
@@ -36,23 +142,6 @@ const Gallery = () => {
       observer.disconnect();
     };
   }, []);
-
-  const galleryTabs = ['Photos', 'Videos', 'Annual Day', 'Sports', 'Cultural Events', 'Classroom'];
-
-  const galleryImages = [
-    'https://lh3.googleusercontent.com/aida-public/AB6AXuA2DPDXaP2bClBIW30e1KUwgbkFSt6LnwJkTj1v18ABmNkeUwFkZKVWuGSQ86c0BgdU0MCvl4mn2cyKAWFo7TQtzsxmccWxaQoMlO5n2hkDQbywhMvWJoMnGZZe-2DpqY-ykusbh3JJ0O1tj64Kfyr39vRj8N1L8CtwMTmtEQbJ0fUThZtPUyYNx2g-YV_KsB9xYsawDkaS_2L9RClEaNZzbeNK7ymr5HWvcTMb77iwGEIyIUKcwewRfWH5Oy-Ka-sgUgtM2ScBgmpf',
-    'https://lh3.googleusercontent.com/aida-public/AB6AXuDZLkCj-dHBGKOkJMrGWJdRdY78KclnOcT1BVRCh8-pjjm091FXRRfnoqU9uN2k6-IKC7Xw1ooPkp09NbsunjduZKSPb-Bx0J_c2_C5sTUI0HZEEWVIRik7X7LxoIQQXxz-xCBKKw5VQNH9ltIYgs2QPLzbh8LvBgoDFx-25tyeewABjlel5fJVKws448xyFB8NgjDTTviI2SHAxYAn-ENtACpk1dcgmouw430fBmGcxFeW4SOM6-dAaffREzDRsHfe2NG50qnrNVNQ',
-    'https://lh3.googleusercontent.com/aida-public/AB6AXuBSyVXzM_9D1COMS5yOpA1rEPay5aOi5Ch_DAeuu5QJ33vlvGJUXN5Zi-O7kg4nGHHPUfSvYMp0Y1osmdgGXDLVBKdLlFbS2zbfbRiVSBWPwt_WKgi2PJ81O_ETIoGTdpRnE8vlOkHNNl8ic6vngfY-VRUhUk7mBT1USFAqN8DErnPhVlbBBwgZRPQDiAVFX5n4gyySbjzkdTNpGrqJ_lKhOWpimiRoiigTRztkcSOBz9SpHQzlhxZkNckdOi8Lo-c_0Fcen1MyXx8u',
-    'https://lh3.googleusercontent.com/aida-public/AB6AXuBSWGSDJHdbw4iCOclQIBnZDmEIg5p-Q3dWmSpTq1SvZwM1FehUqZEOOa5MGhrgmDYKNxSXb_bn1vQTuWRVmpgqemOeO9NuQUgX_VC3tdbU1yYnSyhaNFseLfRq-k406bIjTNj_zBQjQUFeucpWVCmAu2_cuK59eqioXSYa5wuAJ2AhXIvoIAfr01RTjByKQ7VMqQrGeYaMy3hhzKoho5HQtfISCNECxHGSQv8-hTP625vy1P3owem1qRinl4FVTN24_ECvc43cs7WK',
-    'https://lh3.googleusercontent.com/aida-public/AB6AXuDY1VcFn6TdeHh7Kr2JeSU5OAJbXu8E9zhELUT0yk4RV5n0DCSkh8hAAEEhvfi5OfhfLdNcOXyQJIga64wmzRQ-FydfMHjLdWTbilTBkCi71_BOgYWRWlDcSYkN_hWXNliNpGszh16uojZawZ8AQgTmsH680i-CJIInlKkUcd25k_HRoDT9W1DQrpt2Ra1_UGE2szc3bLNw_HYX-e8jp8Qekkpj3zRNtY1kbukjzrVeeGX-7LmoKVolqbNazzLWjo-uuQIpVa4rWexN',
-    'https://lh3.googleusercontent.com/aida-public/AB6AXuAhKA74nGRQz92jg5gbWW4RqRgeHXSrlYTnIiHlkmaIXz56ZqgakLXGdvEPCpPBpAth172-DJuDgkFAdL4oiTYUODVeTZqlAlVry3M-GspZyNUTT19OclI5KNBHvcA87CsCpw6pgaTrUV99JeQFRQQaGm5XunWdQmwLBCl53VvjWElkKatJe_BVd5ZjxpqdEu-I7LddhetsPiLDiqC3BJP2QT1iERDycFabo8op89lRp_tl06wgt2ixNZ2QZfTfk-T1342btUJldGeW',
-    'https://lh3.googleusercontent.com/aida-public/AB6AXuBHK8u4eJtu9RL2fYf27T0X_tsWT2N6eTwLQ_pW7jduPMcs1gM70pQqRFZFRMTmNMTXoctyAWJU1eY8gU1vFSrZ_n117FqzOVXY-UU6ZH8zwI1tTNT9dJt1N3rOqkN3yq5ZsCdHBW16NThcQbL7aKgvgeYnQZOVi0wgErr1-Mq3mt-Pxo4cjxFE1DMnqeK8X1sJxhbdj7AT-MRpyxT_0OFvV2QDc3E6DGrDJo3pQ3BTaQEYMaeeACQQnlVpWtfKcCo5uvJ9k5SA2FYw',
-    'https://lh3.googleusercontent.com/aida-public/AB6AXuBbx_NazlBewYHRrNMvp6wmALWgqT-tXCEX5Wjm8emDWIcPY5NalMOLvotcocOYuT1O6vsUkcU3fYJNcvS5MxfhBQR7ZPMjuSAlzg6iljmw-1l2lJuOnhKbV_ZmF3xBJPz6Ypr5VC-EhaYVrdjNZsEJU1U3iDBI6xwtKyjOvuWUwYMvmpHc8Ylc9tfmNdDbfEByMn7KuH_1BpO8ltP8T4KqURawLF7btcQYj2alfQxq3Yp7s9yjl_YaF2GIA9V8I77PSEQesnf-BQli',
-    'https://lh3.googleusercontent.com/aida-public/AB6AXuDjO3RJCh8WZH4FHx1pWC51_kxFu1MlargUlKf04qW0Nz7mU7QbxHVELRCSPG5UMPwrcXVordgvUqD2g9dtHPI5PbWZRt2dP1gTdgV9Ars93wP0LqNskUpfHydDW3R4U7EtcIclVV0z6BpypixKP58wZDmycqA5HKTnlN8VTwy_arSjmdllnxCWQ2zMjc_5JyQX7bXBh-GCJiWU2KzxFltJy5h1TSepZigKkj4Tc53PVhYv_u3o1xSb5r2Eettek0g6ulXojl2INhTU',
-    'https://lh3.googleusercontent.com/aida-public/AB6AXuDdmNS8ar7aJbr_kLdoDPa2b42qUKndv-cG0IXnKT5uQQtrChRgsKz1_IsrBQcv8Iz9-buTcFsL5Y0UqSy_3acdpPEvNVFqbcOKFUkBcOBkGp0Mcb0ctQjlNmM6aNejvLjwYFmM6SATZyf4o94L6Uc_z--rgctpx20Gq1dTyviMv14-r8L9D7Fj1fKmu3F7PZrB-1vIDCTdCKCLM2wTyJxJPcTOJS7rz5LfS7S_Zg4D7FWxgTDr7LF7jxJJ1rfSXVuytRr_zToYhsSP',
-    'https://lh3.googleusercontent.com/aida-public/AB6AXuANwChyjx5vcQr2oYDLgyLc245YykJeKwbQ4nMONrpRN206yKFApNFMDylehGVcPQ2bC3M0FJW1XlrWhF9SZRV9-L6QFAOs0TRLKuEu_kj5kf4MV1IAreC8nfqSVQfV5QCcAduwSxfdKI9m7ylcPc4rGjy2DbZExMqjlGEejWZm4TMG4Tcs2Kw0nwx6ABTCnmzPJzAur5TkCisFVNC9-1i91aSdpYAglSw-CgkuFXcIsuPwxlHRbsRfS4doCl8Z7I1rldPHjUMmvwLK',
-    'https://lh3.googleusercontent.com/aida-public/AB6AXuDlfUyt4GsgtD2RIiTLr8azeITJj1Ao0GJCAF9vdC9uRQQuUJvVUtBFdTL3iTkaYAnpaXDQtwqmW4WGhowlik2Z7M4BT7qJ4R-8p9o3qZIxhUK_3YfkR7OwoUMDnvNjsS1HuRZMCs0RzDQlvNgYQ77WTV9arcuS0qyDJh9Ks5dDd20YcFRAZZrW0cidI7ZTs0OKiU35WVHxjsbxRAvsWGjotjSvJZizfZ5SoXcMaTGD4LBIs6IZxkQTMMqu1KA8kJnnPB1ymhdqtDin'
-  ];
 
   return (
     <div className="bg-background-light dark:bg-background-dark font-display text-slate-800 dark:text-slate-200 relative overflow-hidden">
@@ -114,43 +203,111 @@ const Gallery = () => {
 
           {/* Gallery Grid */}
           <div 
-            className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-12 transition-all duration-1000 ease-out transform ${
+            className={`transition-all duration-1000 ease-out transform ${
               galleryVisible 
                 ? 'opacity-100 translate-y-0' 
                 : 'opacity-0 translate-y-8'
             }`}
             ref={sectionRef}
           >
-            {galleryImages.map((image, index) => (
-              <div
-                key={index}
-                className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2"
-                style={{
-                  transitionDelay: `${600 + (index * 50)}ms`
-                }}
-              >
-                <div
-                  className="w-full h-full bg-center bg-no-repeat aspect-square bg-cover transition-transform duration-500 group-hover:scale-110"
-                  style={{ backgroundImage: `url("${image}")` }}
-                ></div>
-                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                
-                {/* Hover overlay with icon */}
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
-                    <span className="text-white text-xl">🔍</span>
-                  </div>
-                </div>
+            {loading ? (
+              // Loading skeleton
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-12">
+                {Array.from({ length: 8 }).map((_, index) => (
+                  <div
+                    key={index}
+                    className="aspect-square bg-slate-200 dark:bg-slate-700 rounded-xl animate-pulse"
+                  ></div>
+                ))}
               </div>
-            ))}
+            ) : galleryData[activeTab] && galleryData[activeTab].length > 0 ? (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-12">
+                {galleryData[activeTab].map((item, index) => (
+                  <div
+                    key={item.id}
+                    className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2"
+                    style={{
+                      transitionDelay: `${600 + (index * 50)}ms`
+                    }}
+                  >
+                    {activeTab === 'Videos' ? (
+                      // Video thumbnail with click functionality
+                      <div 
+                        className="relative w-full h-full cursor-pointer"
+                        onClick={() => window.open(item.image_url, '_blank')}
+                        title="Click to open video"
+                      >
+                        <img
+                          src={getVideoThumbnail(item.image_url)}
+                          alt={`${activeTab} video`}
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                          onError={(e) => {
+                            e.target.src = '/images/placeholder-video.jpg';
+                          }}
+                        />
+                        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        
+                        {/* Platform icon overlay */}
+                        <div className="absolute top-2 left-2 bg-black/70 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm">
+                          {getVideoPlatformIcon(item.image_url)}
+                        </div>
+                        
+                        {/* Play button overlay */}
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                          <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center transform group-hover:scale-110 transition-transform duration-300">
+                            <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M8 5v14l11-7z"/>
+                            </svg>
+                          </div>
+                        </div>
+                        
+                        {/* Click hint */}
+                        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                          <div className="bg-blue-500/80 text-white text-xs px-2 py-1 rounded-full">
+                            🔗 Open
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      // Regular image
+                      <div
+                        className="w-full h-full bg-center bg-no-repeat aspect-square bg-cover transition-transform duration-500 group-hover:scale-110"
+                        style={{ backgroundImage: `url("${item.image_url}")` }}
+                      ></div>
+                    )}
+                    <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    
+                    {/* Hover overlay with icon */}
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
+                        <span className="text-white text-xl">{activeTab === 'Videos' ? '▶️' : '🔍'}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              // No content available
+              <div className="text-center py-12 mb-12">
+                <div className="text-6xl mb-4">{activeTab === 'Videos' ? '🎥' : '📷'}</div>
+                <h3 className="text-xl font-semibold text-slate-600 dark:text-slate-400 mb-2">
+                  No {activeTab.toLowerCase()} available
+                </h3>
+                <p className="text-slate-500 dark:text-slate-500">
+                  Check back later for {activeTab.toLowerCase()} content.
+                </p>
+              </div>
+            )}
           </div>
 
-          {/* Load More Button */}
-          <div className="text-center">
-            <button className="bg-primary text-white font-bold py-3 px-8 rounded-xl hover:bg-primary/90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95">
-              Load More
-            </button>
-          </div>
+          {/* Load More Button - only show if there are items */}
+          {galleryData[activeTab] && galleryData[activeTab].length > 0 && (
+            <div className="text-center">
+              <button className="bg-primary text-white font-bold py-3 px-8 rounded-xl hover:bg-primary/90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95">
+                Load More
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
