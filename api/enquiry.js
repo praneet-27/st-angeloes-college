@@ -39,9 +39,7 @@ export default async function handler(req, res) {
             email,
             phone,
             class_interested: classInterested,
-            message,
-            is_active: true,
-            created_at: new Date().toISOString()
+            message
           }
         ])
         .select();
