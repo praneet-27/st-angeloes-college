@@ -91,6 +91,8 @@ const AdminGallery = ({ onLogout }) => {
         return;
       }
 
+      console.log('Selected file:', selectedFile.name, 'Size:', (selectedFile.size / (1024 * 1024)).toFixed(2), 'MB');
+      
       const maxSize = 4 * 1024 * 1024; // 4MB
       if (selectedFile.size > maxSize) {
         showError('File size too large. Please select an image smaller than 4MB.');
@@ -121,25 +123,37 @@ const AdminGallery = ({ onLogout }) => {
         const reader = new FileReader();
         reader.onload = async (e) => {
           try {
+            console.log('FileReader onload - starting base64 conversion');
             const base64Data = e.target.result;
+            console.log('Base64 data length:', base64Data.length);
             const requestBody = {
               section: selectedSection,
               imageUrl: base64Data
             };
+            console.log('Calling submitToAPI for image');
             await submitToAPI(requestBody, progressInterval);
           } catch (error) {
+            console.error('Error in FileReader onload:', error);
             clearInterval(progressInterval);
             showError('Error uploading item: ' + error.message);
             setUploading(false);
             setUploadProgress(0);
           }
         };
-        reader.onerror = () => {
+        reader.onerror = (error) => {
+          console.error('FileReader error:', error);
           clearInterval(progressInterval);
           showError('Error reading file');
           setUploading(false);
           setUploadProgress(0);
         };
+        reader.onloadstart = () => {
+          console.log('FileReader started reading file');
+        };
+        reader.onloadend = () => {
+          console.log('FileReader finished reading file');
+        };
+        console.log('Starting FileReader.readAsDataURL');
         reader.readAsDataURL(selectedFile);
       }
     } catch (error) {
