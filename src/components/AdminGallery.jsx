@@ -584,8 +584,21 @@ const AdminGallery = ({ onLogout }) => {
                         </button>
                       </div>
                     ) : (
-                      // Regular image
-                      <img src={item.image_url} alt={item.section} className="w-full h-full object-cover" />
+                      // Regular image with delete button
+                      <div className="relative w-full h-full">
+                        <img src={item.image_url} alt={item.section} className="w-full h-full object-cover" />
+                        
+                        {/* Delete button for regular images */}
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deleteImage(item.id);
+                          }} 
+                          className="absolute top-2 right-2 bg-red-500/80 hover:bg-red-500 text-white rounded-full w-8 h-8 text-sm opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center hover:scale-110 z-20"
+                        >
+                          <span className="text-lg">×</span>
+                        </button>
+                      </div>
                     )}
                   </div>
                 </div>
