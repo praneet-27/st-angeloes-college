@@ -109,30 +109,39 @@ const AdminGallery = ({ onLogout }) => {
     }, 200);
     
     try {
-      let requestBody;
-      
       if (selectedSection === 'Videos') {
         // For videos, send the URL directly
-        requestBody = {
+        const requestBody = {
           section: selectedSection,
           videoUrl: videoUrl.trim()
         };
+        await submitToAPI(requestBody, progressInterval);
       } else {
         // For images, convert to base64
         const reader = new FileReader();
         reader.onload = async (e) => {
-          const base64Data = e.target.result;
-          requestBody = {
-            section: selectedSection,
-            imageUrl: base64Data
-          };
-          await submitToAPI(requestBody, progressInterval);
+          try {
+            const base64Data = e.target.result;
+            const requestBody = {
+              section: selectedSection,
+              imageUrl: base64Data
+            };
+            await submitToAPI(requestBody, progressInterval);
+          } catch (error) {
+            clearInterval(progressInterval);
+            showError('Error uploading item: ' + error.message);
+            setUploading(false);
+            setUploadProgress(0);
+          }
+        };
+        reader.onerror = () => {
+          clearInterval(progressInterval);
+          showError('Error reading file');
+          setUploading(false);
+          setUploadProgress(0);
         };
         reader.readAsDataURL(selectedFile);
-        return; // Exit early for images since we handle it in reader.onload
       }
-      
-      await submitToAPI(requestBody, progressInterval);
     } catch (error) {
       clearInterval(progressInterval);
       showError('Error uploading item: ' + error.message);
@@ -144,6 +153,7 @@ const AdminGallery = ({ onLogout }) => {
   // Submit to API
   const submitToAPI = async (requestBody, progressInterval) => {
     try {
+      console.log('Submitting to API:', requestBody);
       const token = await getAuthToken();
       const response = await fetch('/api/gallery', {
         method: 'POST',
@@ -154,8 +164,11 @@ const AdminGallery = ({ onLogout }) => {
         body: JSON.stringify(requestBody)
       });
       
+      console.log('Response status:', response.status);
+      const result = await response.json();
+      console.log('Response result:', result);
+      
       if (response.ok) {
-        const result = await response.json();
         if (result.success) {
           clearInterval(progressInterval);
           setUploadProgress(100);
@@ -164,7 +177,7 @@ const AdminGallery = ({ onLogout }) => {
             setSelectedFile(null);
             setVideoUrl('');
             document.getElementById('galleryImage').value = '';
-            loadGalleryImages();
+            loadGalleryImages(); // This should refresh the gallery
             setUploading(false);
             setUploadProgress(0);
           }, 500);
@@ -175,9 +188,13 @@ const AdminGallery = ({ onLogout }) => {
           setUploadProgress(0);
         }
       } else {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        clearInterval(progressInterval);
+        showError(`Error: ${result.error || response.statusText}`);
+        setUploading(false);
+        setUploadProgress(0);
       }
     } catch (apiError) {
+      console.error('API Error:', apiError);
       clearInterval(progressInterval);
       showError('API not available. Please try again later.');
       setUploading(false);
