@@ -223,9 +223,9 @@ const Careers = () => {
                 To apply for any of the open positions, please submit your resume, cover letter, and a brief statement of your educational philosophy to{' '}
                 <a 
                   className="font-medium text-primary hover:underline transition-colors duration-300" 
-                  href="mailto:careers@stangeloescollege.edu"
+                  href="mailto:st.angeloes2013@gmail.com"
                 >
-                  careers@stangeloescollege.edu
+                  st.angeloes2013@gmail.com
                 </a>
                 . Please indicate the position you are applying for in the subject line of your email. We look forward to hearing from you!
               </p>
@@ -342,7 +342,7 @@ const Careers = () => {
                 onClick={() => {
                   const subject = `Application for ${selectedJob.title}`;
                   const body = `Dear Hiring Manager,\n\nI am writing to express my interest in the ${selectedJob.title} position at St. Angeloes College. Please find my application materials attached.\n\nBest regards,\n[Your Name]`;
-                  window.open(`mailto:careers@stangeloescollege.edu?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`);
+                  window.open(`mailto:st.angeloes2013@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`);
                 }}
                 className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
               >
