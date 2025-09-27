@@ -12,6 +12,44 @@ const AdminGallery = ({ onLogout }) => {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
 
+  // Helper function to get video thumbnail
+  const getVideoThumbnail = (videoUrl) => {
+    if (!videoUrl) return '/images/placeholder-video.jpg';
+    
+    // YouTube thumbnail
+    if (videoUrl.includes('youtube.com/watch') || videoUrl.includes('youtu.be/')) {
+      let videoId = '';
+      if (videoUrl.includes('youtube.com/watch')) {
+        videoId = videoUrl.split('v=')[1]?.split('&')[0];
+      } else if (videoUrl.includes('youtu.be/')) {
+        videoId = videoUrl.split('youtu.be/')[1]?.split('?')[0];
+      }
+      if (videoId) {
+        return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+      }
+    }
+    
+    // Instagram thumbnail (limited - Instagram doesn't provide direct thumbnail API)
+    if (videoUrl.includes('instagram.com/')) {
+      return '/images/instagram-placeholder.jpg';
+    }
+    
+    // Default thumbnail
+    return '/images/placeholder-video.jpg';
+  };
+
+  // Helper function to get video platform icon
+  const getVideoPlatformIcon = (videoUrl) => {
+    if (videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be/')) {
+      return '🎥'; // YouTube icon
+    } else if (videoUrl.includes('instagram.com')) {
+      return '📷'; // Instagram icon
+    } else if (videoUrl.includes('vimeo.com')) {
+      return '🎬'; // Vimeo icon
+    }
+    return '🎥'; // Default video icon
+  };
+
   // Helper function to get auth token
   const getAuthToken = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -437,9 +475,11 @@ const AdminGallery = ({ onLogout }) => {
         {/* Gallery Images Display */}
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-lg">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-slate-800">Current Gallery Images</h2>
+            <h2 className="text-2xl font-bold text-slate-800">
+              Current {selectedSection === 'Videos' ? 'Videos' : 'Gallery Images'}
+            </h2>
             <div className="text-sm text-slate-600 bg-white/50 px-3 py-1 rounded-full">
-              {galleryImages.length} images in {selectedSection}
+              {galleryImages.length} {selectedSection === 'Videos' ? 'videos' : 'images'} in {selectedSection}
             </div>
           </div>
           
@@ -453,7 +493,41 @@ const AdminGallery = ({ onLogout }) => {
               {galleryImages.map((item) => (
                 <div key={item.id} className="relative group">
                   <div className="aspect-square overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 group-hover:scale-105">
-                    <img src={item.image_url} alt={item.section} className="w-full h-full object-cover" />
+                    {selectedSection === 'Videos' ? (
+                      // Video thumbnail with platform icon
+                      <div className="relative w-full h-full">
+                        <img 
+                          src={getVideoThumbnail(item.image_url)} 
+                          alt={`${item.section} video`} 
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.target.src = '/images/placeholder-video.jpg';
+                          }}
+                        />
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300"></div>
+                        {/* Platform icon overlay */}
+                        <div className="absolute top-2 left-2 bg-black/70 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm">
+                          {getVideoPlatformIcon(item.image_url)}
+                        </div>
+                        {/* Play button overlay */}
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                          <div className="bg-white/90 rounded-full p-3">
+                            <svg className="w-6 h-6 text-slate-700" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M8 5v14l11-7z"/>
+                            </svg>
+                          </div>
+                        </div>
+                        {/* Video URL preview on hover */}
+                        <div className="absolute bottom-2 left-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                          <div className="bg-black/80 text-white text-xs p-2 rounded truncate">
+                            {item.image_url}
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      // Regular image
+                      <img src={item.image_url} alt={item.section} className="w-full h-full object-cover" />
+                    )}
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300"></div>
                     <button 
                       onClick={() => deleteImage(item.id)} 
@@ -467,9 +541,13 @@ const AdminGallery = ({ onLogout }) => {
             </div>
           ) : (
             <div className="text-center py-12">
-              <div className="text-6xl mb-4">📷</div>
-              <h3 className="text-xl font-semibold text-slate-600 mb-2">No images found</h3>
-              <p className="text-slate-500">No images available for {selectedSection} section yet.</p>
+              <div className="text-6xl mb-4">{selectedSection === 'Videos' ? '🎥' : '📷'}</div>
+              <h3 className="text-xl font-semibold text-slate-600 mb-2">
+                No {selectedSection === 'Videos' ? 'videos' : 'images'} found
+              </h3>
+              <p className="text-slate-500">
+                No {selectedSection === 'Videos' ? 'videos' : 'images'} available for {selectedSection} section yet.
+              </p>
             </div>
           )}
         </div>
