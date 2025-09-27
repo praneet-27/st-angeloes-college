@@ -1,5 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import Header from './components/Header';
 import Home from './components/Home';
 import AboutUs from './components/AboutUs';
@@ -52,6 +54,10 @@ function App() {
               {/* Floating Enquiry Button */}
               <FloatingEnquiryButton />
             </div>
+            
+            {/* Vercel Analytics and Speed Insights */}
+            <Analytics />
+            <SpeedInsights />
           </div>
         } />
       </Routes>
