@@ -117,9 +117,7 @@ const AdminNews = ({ onLogout }) => {
       
       // Convert image to base64 if provided
       if (newsForm.image) {
-        console.log('Converting image to base64...', newsForm.image.name, newsForm.image.size);
         imageData = await fileToBase64(newsForm.image);
-        console.log('Base64 conversion complete, length:', imageData.length);
       }
 
       const requestBody = {
@@ -131,7 +129,6 @@ const AdminNews = ({ onLogout }) => {
         location: newsForm.location || null
       };
 
-      console.log('Sending request with imageData:', imageData ? 'present' : 'null');
 
       const token = await getAuthToken();
       const response = await fetch('/api/news', {

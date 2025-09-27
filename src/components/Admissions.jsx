@@ -22,7 +22,6 @@ const Admissions = () => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             // Animation triggered when section is visible
-            console.log('Section is visible');
           }
         });
       },

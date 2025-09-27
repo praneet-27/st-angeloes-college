@@ -35,7 +35,6 @@ const AdminGallery = ({ onLogout }) => {
       const instagramMatch = videoUrl.match(/instagram\.com\/(p|reel)\/([^/?]+)/);
       if (instagramMatch) {
         const postId = instagramMatch[2];
-        console.log('Instagram post ID extracted:', postId);
         
         // Try multiple Instagram thumbnail services
         // Method 1: Instagram's own media endpoint (often blocked by CORS)
@@ -155,7 +154,6 @@ const AdminGallery = ({ onLogout }) => {
         return;
       }
 
-      console.log('Selected file:', selectedFile.name, 'Size:', (selectedFile.size / (1024 * 1024)).toFixed(2), 'MB');
       
       const maxSize = 4 * 1024 * 1024; // 4MB
       if (selectedFile.size > maxSize) {
@@ -187,14 +185,11 @@ const AdminGallery = ({ onLogout }) => {
         const reader = new FileReader();
         reader.onload = async (e) => {
           try {
-            console.log('FileReader onload - starting base64 conversion');
             const base64Data = e.target.result;
-            console.log('Base64 data length:', base64Data.length);
             const requestBody = {
               section: selectedSection,
               imageUrl: base64Data
             };
-            console.log('Calling submitToAPI for image');
             await submitToAPI(requestBody, progressInterval);
           } catch (error) {
             console.error('Error in FileReader onload:', error);
@@ -211,13 +206,6 @@ const AdminGallery = ({ onLogout }) => {
           setUploading(false);
           setUploadProgress(0);
         };
-        reader.onloadstart = () => {
-          console.log('FileReader started reading file');
-        };
-        reader.onloadend = () => {
-          console.log('FileReader finished reading file');
-        };
-        console.log('Starting FileReader.readAsDataURL');
         reader.readAsDataURL(selectedFile);
       }
     } catch (error) {
@@ -231,9 +219,7 @@ const AdminGallery = ({ onLogout }) => {
   // Submit to API
   const submitToAPI = async (requestBody, progressInterval) => {
     try {
-      console.log('Submitting to API:', requestBody);
       const token = await getAuthToken();
-      console.log('Auth token:', token ? 'Present' : 'Missing');
       
       if (!token) {
         clearInterval(progressInterval);
@@ -252,9 +238,7 @@ const AdminGallery = ({ onLogout }) => {
         body: JSON.stringify(requestBody)
       });
       
-      console.log('Response status:', response.status);
       const result = await response.json();
-      console.log('Response result:', result);
       
       if (response.ok && result.success) {
         clearInterval(progressInterval);
@@ -535,7 +519,6 @@ const AdminGallery = ({ onLogout }) => {
                         <div 
                           className="absolute inset-0 cursor-pointer z-10"
                           onClick={() => {
-                            console.log('Video clicked:', item.image_url);
                             window.open(item.image_url, '_blank');
                           }}
                           title="Click to open video"

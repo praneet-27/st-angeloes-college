@@ -266,7 +266,6 @@ const Gallery = () => {
                         <div 
                           className="absolute inset-0 cursor-pointer z-10"
                           onClick={() => {
-                            console.log('Video clicked:', item.image_url);
                             window.open(item.image_url, '_blank');
                           }}
                           title="Click to open video"
@@ -300,7 +299,6 @@ const Gallery = () => {
                         <div 
                           className="absolute inset-0 cursor-pointer z-10"
                           onClick={() => {
-                            console.log('Image clicked:', item.image_url);
                             openImageModal(item.image_url, `${activeTab} Image`);
                           }}
                           title="Click to view full size"
