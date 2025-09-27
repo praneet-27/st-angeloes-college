@@ -8,6 +8,7 @@ const AdminGallery = ({ onLogout }) => {
   const [loading, setLoading] = useState(false);
   const [selectedSection, setSelectedSection] = useState('Photos');
   const [selectedFile, setSelectedFile] = useState(null);
+  const [videoUrl, setVideoUrl] = useState('');
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
 
@@ -69,17 +70,32 @@ const AdminGallery = ({ onLogout }) => {
     }
   }, [selectedSection]);
 
-  // Upload gallery image
-  const uploadGalleryImage = async () => {
-    if (!selectedFile) {
-      showError('Please select an image file');
-      return;
-    }
+  // Upload gallery item (image or video)
+  const uploadGalleryItem = async () => {
+    // Check if it's a video section
+    if (selectedSection === 'Videos') {
+      if (!videoUrl.trim()) {
+        showError('Please enter a video URL');
+        return;
+      }
+      
+      // Validate URL format
+      const urlPattern = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be|instagram\.com|vimeo\.com)/;
+      if (!urlPattern.test(videoUrl.trim())) {
+        showError('Please enter a valid YouTube, Instagram, or Vimeo URL');
+        return;
+      }
+    } else {
+      if (!selectedFile) {
+        showError('Please select an image file');
+        return;
+      }
 
-    const maxSize = 4 * 1024 * 1024; // 4MB
-    if (selectedFile.size > maxSize) {
-      showError('File size too large. Please select an image smaller than 4MB.');
-      return;
+      const maxSize = 4 * 1024 * 1024; // 4MB
+      if (selectedFile.size > maxSize) {
+        showError('File size too large. Please select an image smaller than 4MB.');
+        return;
+      }
     }
 
     setUploading(true);
@@ -93,57 +109,77 @@ const AdminGallery = ({ onLogout }) => {
     }, 200);
     
     try {
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        const base64Data = e.target.result;
-        
-        try {
-          const token = await getAuthToken();
-          const response = await fetch('/api/gallery', {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              section: selectedSection,
-              imageUrl: base64Data
-            })
-          });
-          
-          if (response.ok) {
-            const result = await response.json();
-            if (result.success) {
-              clearInterval(progressInterval);
-              setUploadProgress(100);
-              setTimeout(() => {
-                showSuccess('Image uploaded successfully!');
-                setSelectedFile(null);
-                document.getElementById('galleryImage').value = '';
-                loadGalleryImages();
-                setUploading(false);
-                setUploadProgress(0);
-              }, 500);
-            } else {
-              clearInterval(progressInterval);
-              showError('Error: ' + result.error);
-              setUploading(false);
-              setUploadProgress(0);
-            }
-          } else {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-          }
-        } catch (apiError) {
+      let requestBody;
+      
+      if (selectedSection === 'Videos') {
+        // For videos, send the URL directly
+        requestBody = {
+          section: selectedSection,
+          videoUrl: videoUrl.trim()
+        };
+      } else {
+        // For images, convert to base64
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+          const base64Data = e.target.result;
+          requestBody = {
+            section: selectedSection,
+            imageUrl: base64Data
+          };
+          await submitToAPI(requestBody, progressInterval);
+        };
+        reader.readAsDataURL(selectedFile);
+        return; // Exit early for images since we handle it in reader.onload
+      }
+      
+      await submitToAPI(requestBody, progressInterval);
+    } catch (error) {
+      clearInterval(progressInterval);
+      showError('Error uploading item: ' + error.message);
+      setUploading(false);
+      setUploadProgress(0);
+    }
+  };
+
+  // Submit to API
+  const submitToAPI = async (requestBody, progressInterval) => {
+    try {
+      const token = await getAuthToken();
+      const response = await fetch('/api/gallery', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody)
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
           clearInterval(progressInterval);
-          showError('API not available. Please try again later.');
+          setUploadProgress(100);
+          setTimeout(() => {
+            showSuccess(selectedSection === 'Videos' ? 'Video added successfully!' : 'Image uploaded successfully!');
+            setSelectedFile(null);
+            setVideoUrl('');
+            document.getElementById('galleryImage').value = '';
+            loadGalleryImages();
+            setUploading(false);
+            setUploadProgress(0);
+          }, 500);
+        } else {
+          clearInterval(progressInterval);
+          showError('Error: ' + result.error);
           setUploading(false);
           setUploadProgress(0);
         }
-      };
-      reader.readAsDataURL(selectedFile);
-    } catch (error) {
+      } else {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+    } catch (apiError) {
       clearInterval(progressInterval);
-      showError('Error uploading image: ' + error.message);
+      showError('API not available. Please try again later.');
       setUploading(false);
       setUploadProgress(0);
     }
@@ -218,14 +254,21 @@ const AdminGallery = ({ onLogout }) => {
       <div className="container mx-auto px-4 pb-12">
         {/* Upload Section */}
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 mb-8 shadow-lg">
-          <h2 className="text-2xl font-bold text-slate-800 mb-6">Upload New Image</h2>
+          <h2 className="text-2xl font-bold text-slate-800 mb-6">
+            {selectedSection === 'Videos' ? 'Add New Video' : 'Upload New Image'}
+          </h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-3">Section:</label>
               <select 
                 value={selectedSection} 
-                onChange={(e) => setSelectedSection(e.target.value)}
+                onChange={(e) => {
+                  setSelectedSection(e.target.value);
+                  setSelectedFile(null);
+                  setVideoUrl('');
+                  document.getElementById('galleryImage').value = '';
+                }}
                 className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-royal-blue focus:border-transparent transition-all duration-300 bg-white/50 backdrop-blur-sm"
               >
                 <option value="Photos">📷 Photos</option>
@@ -238,44 +281,74 @@ const AdminGallery = ({ onLogout }) => {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-3">Image File:</label>
-              <input 
-                type="file" 
-                id="galleryImage"
-                accept="image/*" 
-                onChange={(e) => setSelectedFile(e.target.files[0])}
-                className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-royal-blue focus:border-transparent transition-all duration-300 bg-white/50 backdrop-blur-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-royal-blue/10 file:text-royal-blue hover:file:bg-royal-blue/20"
-              />
-              {selectedFile && (
-                <div className="mt-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-slate-700">📁 {selectedFile.name}</span>
-                    <span className={`text-sm font-medium px-2 py-1 rounded-full ${
-                      selectedFile.size > 4 * 1024 * 1024 
-                        ? 'bg-red-100 text-red-700' 
-                        : selectedFile.size > 2 * 1024 * 1024 
-                          ? 'bg-yellow-100 text-yellow-700'
-                          : 'bg-green-100 text-green-700'
-                    }`}>
-                      {(selectedFile.size / (1024 * 1024)).toFixed(1)} MB
-                    </span>
+              {selectedSection === 'Videos' ? (
+                <>
+                  <label className="block text-sm font-semibold text-slate-700 mb-3">Video URL:</label>
+                  <input 
+                    type="url" 
+                    value={videoUrl}
+                    onChange={(e) => setVideoUrl(e.target.value)}
+                    placeholder="https://www.youtube.com/watch?v=... or https://www.instagram.com/p/..."
+                    className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-royal-blue focus:border-transparent transition-all duration-300 bg-white/50 backdrop-blur-sm"
+                  />
+                  <div className="mt-2 text-xs text-slate-500">
+                    Supported: YouTube, Instagram, Vimeo links
                   </div>
-                  {selectedFile.size > 4 * 1024 * 1024 && (
-                    <div className="mt-2 text-sm text-red-600 flex items-center gap-1">
-                      <span>⚠️</span>
-                      <span>File size exceeds 4MB limit</span>
+                  {videoUrl && (
+                    <div className="mt-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium text-slate-700">🔗 {videoUrl}</span>
+                      </div>
                     </div>
                   )}
-                </div>
+                </>
+              ) : (
+                <>
+                  <label className="block text-sm font-semibold text-slate-700 mb-3">Image File:</label>
+                  <input 
+                    type="file" 
+                    id="galleryImage"
+                    accept="image/*" 
+                    onChange={(e) => setSelectedFile(e.target.files[0])}
+                    className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-royal-blue focus:border-transparent transition-all duration-300 bg-white/50 backdrop-blur-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-royal-blue/10 file:text-royal-blue hover:file:bg-royal-blue/20"
+                  />
+                  {selectedFile && (
+                    <div className="mt-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-slate-700">📁 {selectedFile.name}</span>
+                        <span className={`text-sm font-medium px-2 py-1 rounded-full ${
+                          selectedFile.size > 4 * 1024 * 1024 
+                            ? 'bg-red-100 text-red-700' 
+                            : selectedFile.size > 2 * 1024 * 1024 
+                              ? 'bg-yellow-100 text-yellow-700'
+                              : 'bg-green-100 text-green-700'
+                        }`}>
+                          {(selectedFile.size / (1024 * 1024)).toFixed(1)} MB
+                        </span>
+                      </div>
+                      {selectedFile.size > 4 * 1024 * 1024 && (
+                        <div className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                          <span>⚠️</span>
+                          <span>File size exceeds 4MB limit</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>
           
           <button 
-            onClick={uploadGalleryImage}
-            disabled={uploading || (selectedFile && selectedFile.size > 4 * 1024 * 1024)}
+            onClick={uploadGalleryItem}
+            disabled={uploading || 
+              (selectedSection === 'Videos' ? !videoUrl.trim() : !selectedFile) ||
+              (selectedFile && selectedFile.size > 4 * 1024 * 1024)
+            }
             className={`px-8 py-3 rounded-xl font-semibold flex items-center gap-2 transition-all duration-300 ${
-              uploading || (selectedFile && selectedFile.size > 4 * 1024 * 1024)
+              uploading || 
+              (selectedSection === 'Videos' ? !videoUrl.trim() : !selectedFile) ||
+              (selectedFile && selectedFile.size > 4 * 1024 * 1024)
                 ? 'bg-gray-400 text-white cursor-not-allowed opacity-50'
                 : 'bg-gradient-to-r from-royal-blue to-blue-800 text-white hover:scale-105 hover:from-blue-800 hover:to-royal-blue'
             }`}
@@ -284,7 +357,7 @@ const AdminGallery = ({ onLogout }) => {
               <>
                 <div className="flex items-center gap-2">
                   <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
-                  <span>Uploading...</span>
+                  <span>{selectedSection === 'Videos' ? 'Adding...' : 'Uploading...'}</span>
                 </div>
               </>
             ) : selectedFile && selectedFile.size > 4 * 1024 * 1024 ? (
@@ -294,8 +367,8 @@ const AdminGallery = ({ onLogout }) => {
               </>
             ) : (
               <>
-                <span className="text-lg">⬆️</span>
-                Upload Image
+                <span className="text-lg">{selectedSection === 'Videos' ? '🎥' : '⬆️'}</span>
+                {selectedSection === 'Videos' ? 'Add Video' : 'Upload Image'}
               </>
             )}
           </button>

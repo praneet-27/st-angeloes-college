@@ -69,45 +69,57 @@ export default async function handler(req, res) {
     if (!isAuthenticated) return;
 
     try {
-      const { section, imageUrl } = req.body;
+      const { section, imageUrl, videoUrl } = req.body;
 
-      if (!section || !imageUrl) {
+      if (!section || (!imageUrl && !videoUrl)) {
         return res.status(400).json({
-          error: 'Missing required fields: section and imageUrl are required'
+          error: 'Missing required fields: section and either imageUrl or videoUrl are required'
         });
       }
 
-      const timestamp = Date.now();
-      const filename = `gallery-${section}-${timestamp}.jpg`;
+      let finalImageUrl = imageUrl;
+      let storagePath = null;
 
-      // Convert base64 data URL to buffer
-      const base64Data = imageUrl.split(',')[1]; // Remove data:image/jpeg;base64, prefix
-      const buffer = Buffer.from(base64Data, 'base64');
+      if (imageUrl) {
+        // Handle image upload
+        const timestamp = Date.now();
+        const filename = `gallery-${section}-${timestamp}.jpg`;
 
-      // Upload to Supabase Storage using admin client
-      const { data: uploadData, error: uploadError } = await supabaseAdmin.storage
-        .from('gallery-images')
-        .upload(filename, buffer, {
-          contentType: 'image/jpeg',
-          upsert: false
-        });
+        // Convert base64 data URL to buffer
+        const base64Data = imageUrl.split(',')[1]; // Remove data:image/jpeg;base64, prefix
+        const buffer = Buffer.from(base64Data, 'base64');
 
-      if (uploadError) {
-        console.error('Storage upload error:', uploadError);
-        throw uploadError;
+        // Upload to Supabase Storage using admin client
+        const { data: uploadData, error: uploadError } = await supabaseAdmin.storage
+          .from('gallery-images')
+          .upload(filename, buffer, {
+            contentType: 'image/jpeg',
+            upsert: false
+          });
+
+        if (uploadError) {
+          console.error('Storage upload error:', uploadError);
+          throw uploadError;
+        }
+
+        const { data: { publicUrl } } = supabaseAdmin.storage
+          .from('gallery-images')
+          .getPublicUrl(filename);
+
+        finalImageUrl = publicUrl;
+        storagePath = uploadData.path;
+      } else if (videoUrl) {
+        // Handle video URL - store the URL directly
+        finalImageUrl = videoUrl;
       }
-
-      const { data: { publicUrl } } = supabaseAdmin.storage
-        .from('gallery-images')
-        .getPublicUrl(filename);
 
       const { data, error } = await supabase
         .from('gallery')
         .insert([
           {
             section,
-            image_url: publicUrl,
-            storage_path: uploadData.path,
+            image_url: finalImageUrl,
+            storage_path: storagePath,
             is_active: true,
             created_at: new Date().toISOString()
           }
@@ -116,14 +128,16 @@ export default async function handler(req, res) {
 
       if (error) {
         console.error('Database error:', error);
-        // If database insert fails, clean up the uploaded file
-        await supabaseAdmin.storage.from('gallery-images').remove([filename]);
+        // If database insert fails and we uploaded a file, clean it up
+        if (storagePath) {
+          await supabaseAdmin.storage.from('gallery-images').remove([storagePath]);
+        }
         throw error;
       }
 
       res.status(200).json({
         success: true,
-        message: 'Gallery item added successfully',
+        message: imageUrl ? 'Gallery item added successfully' : 'Video added successfully',
         data: data[0]
       });
 
