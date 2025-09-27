@@ -1,4 +1,7 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
+
+// Move galleryTabs outside component to avoid dependency issues
+const GALLERY_TABS = ['Photos', 'Videos', 'Annual Day', 'Sports', 'Cultural Events', 'Classroom'];
 
 const Gallery = () => {
   const [headerVisible, setHeaderVisible] = useState(false);
@@ -8,8 +11,6 @@ const Gallery = () => {
   const [galleryData, setGalleryData] = useState({});
   const [loading, setLoading] = useState(false);
   const sectionRef = useRef(null);
-
-  const galleryTabs = ['Photos', 'Videos', 'Annual Day', 'Sports', 'Cultural Events', 'Classroom'];
 
   // Helper function to get video thumbnail
   const getVideoThumbnail = (videoUrl) => {
@@ -33,10 +34,9 @@ const Gallery = () => {
       // Try to extract Instagram post ID
       const instagramMatch = videoUrl.match(/instagram\.com\/(p|reel)\/([^/?]+)/);
       if (instagramMatch) {
-        const postId = instagramMatch[2];
-        
         // For now, let's use a beautiful Instagram-style placeholder
         // In the future, we could implement a backend service to fetch Instagram thumbnails
+        // const postId = instagramMatch[2]; // Will be used when implementing real thumbnail fetching
         return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDMwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9ImlnR3JhZCIgeDE9IjAlIiB5MT0iMCUiIHgyPSIxMDAlIiB5Mj0iMTAwJSI+CjxzdG9wIG9mZnNldD0iMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiNGRjYwODU7c3RvcC1vcGFjaXR5OjEiIC8+CjxzdG9wIG9mZnNldD0iMjUlIiBzdHlsZT0ic3RvcC1jb2xvcjojRkZDNDUzO3N0b3Atb3BhY2l0eToxIiAvPgo8c3RvcCBvZmZzZXQ9IjUwJSIgc3R5bGU9InN0b3AtY29sb3I6I0YzNDk1NTtzdG9wLW9wYWNpdHk6MSIgLz4KPHN0b3Agb2Zmc2V0PSI3NSUiIHN0eWxlPSJzdG9wLWNvbG9yOiNFMTMwQjU7c3RvcC1vcGFjaXR5OjEiIC8+CjxzdG9wIG9mZnNldD0iMTAwJSIgc3R5bGU9InN0b3AtY29sb3I6I0M4MzJBNTtzdG9wLW9wYWNpdHk6MSIgLz4KPC9saW5lYXJHcmFkaWVudD4KPC9kZWZzPgo8cmVjdCB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0idXJsKCNpZ0dyYWQpIi8+CjxjaXJjbGUgY3g9IjE1MCIgY3k9IjEyMCIgcj0iNDAiIGZpbGw9IndoaXRlIiBmaWxsLW9wYWNpdHk9IjAuOSIvPgo8Y2lyY2xlIGN4PSIxNTAiIGN5PSIxMzAiIHI9IjE1IiBmaWxsPSJ3aGl0ZSIgZmlsbC1vcGFjaXR5PSIwLjkiLz4KPHN2ZyB4PSIxMjAiIHk9IjE2MCIgd2lkdGg9IjYwIiBoZWlnaHQ9IjYwIiBmaWxsPSJ3aGl0ZSIgZmlsbC1vcGFjaXR5PSIwLjciPgo8cGF0aCBkPSJNMzAgMTBMMjAgMjBMMTAgMTBMMjAgMEwzMCAxMFoiLz4KPC9zdmc+Cjx0ZXh0IHg9IjE1MCIgeT0iMjAwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTIiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsLW9wYWNpdHk9IjAuOCIgZHk9Ii4zZW0iPkluc3RhZ3JhbTwvdGV4dD4KPC9zdmc+';
       }
       
@@ -70,7 +70,7 @@ const Gallery = () => {
   };
 
   // Fetch gallery data for a specific section
-  const fetchGallerySection = async (section) => {
+  const fetchGallerySection = useCallback(async (section) => {
     try {
       setLoading(true);
       const response = await fetch(`/api/gallery?section=${section}`);
@@ -97,21 +97,21 @@ const Gallery = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   // Fetch all gallery sections on component mount
   useEffect(() => {
-    galleryTabs.forEach(section => {
+    GALLERY_TABS.forEach(section => {
       fetchGallerySection(section);
     });
-  }, []);
+  }, [fetchGallerySection]);
 
   // Fetch data when tab changes
   useEffect(() => {
     if (!galleryData[activeTab]) {
       fetchGallerySection(activeTab);
     }
-  }, [activeTab]);
+  }, [activeTab, fetchGallerySection, galleryData]);
 
   useEffect(() => {
     // Page load animations
@@ -182,7 +182,7 @@ const Gallery = () => {
             }`}
           >
             <div className="flex flex-wrap justify-center border-b border-primary/20 dark:border-primary/30">
-              {galleryTabs.map((tab, index) => (
+              {GALLERY_TABS.map((tab, index) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
