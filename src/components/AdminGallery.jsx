@@ -181,15 +181,25 @@ const AdminGallery = ({ onLogout }) => {
       if (response.ok && result.success) {
         clearInterval(progressInterval);
         setUploadProgress(100);
-        setTimeout(() => {
-          showSuccess(selectedSection === 'Videos' ? 'Video added successfully!' : 'Image uploaded successfully!');
-          setSelectedFile(null);
+        
+        // For videos, don't delay - immediate response
+        if (selectedSection === 'Videos') {
+          showSuccess('Video added successfully!');
           setVideoUrl('');
-          document.getElementById('galleryImage').value = '';
-          loadGalleryImages(); // This should refresh the gallery
+          loadGalleryImages(); // Immediate refresh for videos
           setUploading(false);
           setUploadProgress(0);
-        }, 500);
+        } else {
+          // For images, keep the delay for UX
+          setTimeout(() => {
+            showSuccess('Image uploaded successfully!');
+            setSelectedFile(null);
+            document.getElementById('galleryImage').value = '';
+            loadGalleryImages();
+            setUploading(false);
+            setUploadProgress(0);
+          }, 500);
+        }
       } else {
         clearInterval(progressInterval);
         showError(`Error: ${result.error || response.statusText || 'Unknown error'}`);
