@@ -34,7 +34,6 @@ const AdminGallery = ({ onLogout }) => {
       // Try to extract Instagram post ID
       const instagramMatch = videoUrl.match(/instagram\.com\/(p|reel)\/([^/?]+)/);
       if (instagramMatch) {
-        const postId = instagramMatch[2];
         
         // Try multiple Instagram thumbnail services
         // Method 1: Instagram's own media endpoint (often blocked by CORS)
