@@ -128,7 +128,7 @@ const AdminJobOpenings = ({ onLogout }) => {
 
   // Handle delete
   const handleDelete = async (jobId) => {
-    if (!confirm('Are you sure you want to delete this job opening?')) return;
+    if (!window.confirm('Are you sure you want to delete this job opening?')) return;
 
     try {
       const token = localStorage.getItem('admin_token');
