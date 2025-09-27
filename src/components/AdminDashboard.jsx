@@ -34,6 +34,16 @@ const AdminDashboard = ({ onLogout }) => {
       hoverColor: 'hover:from-emerald-600 hover:to-green-500',
       stats: 'Publish & manage content',
       path: '/admin/news'
+    },
+    {
+      id: 'jobs',
+      title: 'Job Openings',
+      description: 'Create and manage career opportunities',
+      icon: '💼',
+      color: 'from-purple-500 to-indigo-600',
+      hoverColor: 'hover:from-indigo-600 hover:to-purple-500',
+      stats: 'Manage careers page',
+      path: '/admin/jobs'
     }
   ];
 
@@ -129,7 +139,7 @@ const AdminDashboard = ({ onLogout }) => {
         {/* Quick Stats */}
         <div className="mt-16 bg-white/60 backdrop-blur-sm rounded-2xl p-8 shadow-lg animate-fadeInUp" style={{ animationDelay: '0.4s' }}>
           <h3 className="text-2xl font-bold text-slate-800 mb-6 text-center">Quick Overview</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="text-center">
               <div className="w-16 h-16 mx-auto mb-3 rounded-xl bg-royal-blue/20 flex items-center justify-center">
                 <span className="text-2xl">🖼️</span>
@@ -150,6 +160,13 @@ const AdminDashboard = ({ onLogout }) => {
               </div>
               <h4 className="font-semibold text-slate-800">News</h4>
               <p className="text-sm text-slate-600">Publish updates</p>
+            </div>
+            <div className="text-center">
+              <div className="w-16 h-16 mx-auto mb-3 rounded-xl bg-purple-500/20 flex items-center justify-center">
+                <span className="text-2xl">💼</span>
+              </div>
+              <h4 className="font-semibold text-slate-800">Jobs</h4>
+              <p className="text-sm text-slate-600">Manage careers</p>
             </div>
           </div>
         </div>
