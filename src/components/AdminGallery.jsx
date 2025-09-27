@@ -32,7 +32,7 @@ const AdminGallery = ({ onLogout }) => {
     // Instagram thumbnail using multiple fallback methods
     if (videoUrl.includes('instagram.com/')) {
       // Try to extract Instagram post ID
-      const instagramMatch = videoUrl.match(/instagram\.com\/(p|reel)\/([^\/\?]+)/);
+      const instagramMatch = videoUrl.match(/instagram\.com\/(p|reel)\/([^/?]+)/);
       if (instagramMatch) {
         const postId = instagramMatch[2];
         console.log('Instagram post ID extracted:', postId);
