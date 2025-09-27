@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '../lib/supabase';
 
 const AdminJobOpenings = ({ onLogout }) => {
   const navigate = useNavigate();
@@ -24,6 +25,12 @@ const AdminJobOpenings = ({ onLogout }) => {
     application_deadline: '',
     is_featured: false
   });
+
+  // Helper function to get auth token
+  const getAuthToken = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    return session?.access_token;
+  };
 
   // Fetch job openings
   const fetchJobs = async () => {
@@ -54,7 +61,13 @@ const AdminJobOpenings = ({ onLogout }) => {
     setSubmitting(true);
 
     try {
-      const token = localStorage.getItem('admin_token');
+      const token = await getAuthToken();
+      if (!token) {
+        alert('Authentication required. Please login again.');
+        setSubmitting(false);
+        return;
+      }
+
       const url = editingJob ? `/api/job-openings?id=${editingJob.id}` : '/api/job-openings';
       const method = editingJob ? 'PUT' : 'POST';
 
@@ -131,7 +144,12 @@ const AdminJobOpenings = ({ onLogout }) => {
     if (!window.confirm('Are you sure you want to delete this job opening?')) return;
 
     try {
-      const token = localStorage.getItem('admin_token');
+      const token = await getAuthToken();
+      if (!token) {
+        alert('Authentication required. Please login again.');
+        return;
+      }
+
       const response = await fetch(`/api/job-openings?id=${jobId}`, {
         method: 'DELETE',
         headers: {
