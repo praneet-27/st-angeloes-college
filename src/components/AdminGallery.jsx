@@ -155,6 +155,16 @@ const AdminGallery = ({ onLogout }) => {
     try {
       console.log('Submitting to API:', requestBody);
       const token = await getAuthToken();
+      console.log('Auth token:', token ? 'Present' : 'Missing');
+      
+      if (!token) {
+        clearInterval(progressInterval);
+        showError('Authentication required. Please login again.');
+        setUploading(false);
+        setUploadProgress(0);
+        return;
+      }
+      
       const response = await fetch('/api/gallery', {
         method: 'POST',
         headers: {
@@ -168,28 +178,21 @@ const AdminGallery = ({ onLogout }) => {
       const result = await response.json();
       console.log('Response result:', result);
       
-      if (response.ok) {
-        if (result.success) {
-          clearInterval(progressInterval);
-          setUploadProgress(100);
-          setTimeout(() => {
-            showSuccess(selectedSection === 'Videos' ? 'Video added successfully!' : 'Image uploaded successfully!');
-            setSelectedFile(null);
-            setVideoUrl('');
-            document.getElementById('galleryImage').value = '';
-            loadGalleryImages(); // This should refresh the gallery
-            setUploading(false);
-            setUploadProgress(0);
-          }, 500);
-        } else {
-          clearInterval(progressInterval);
-          showError('Error: ' + result.error);
+      if (response.ok && result.success) {
+        clearInterval(progressInterval);
+        setUploadProgress(100);
+        setTimeout(() => {
+          showSuccess(selectedSection === 'Videos' ? 'Video added successfully!' : 'Image uploaded successfully!');
+          setSelectedFile(null);
+          setVideoUrl('');
+          document.getElementById('galleryImage').value = '';
+          loadGalleryImages(); // This should refresh the gallery
           setUploading(false);
           setUploadProgress(0);
-        }
+        }, 500);
       } else {
         clearInterval(progressInterval);
-        showError(`Error: ${result.error || response.statusText}`);
+        showError(`Error: ${result.error || response.statusText || 'Unknown error'}`);
         setUploading(false);
         setUploadProgress(0);
       }
