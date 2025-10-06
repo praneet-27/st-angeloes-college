@@ -34,10 +34,15 @@ const FounderMessage = () => {
           <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2 transition-all duration-1000 ease-out transform" style={{ transitionDelay: '400ms' }}>
             Welcome to St. Angeloes College
           </h3>
+          <p className="italic text-slate-600 dark:text-slate-400 text-base leading-relaxed transition-all duration-1000 ease-out transform" style={{ transitionDelay: '600ms' }}>
+          “Discipline, dedication and determination is the only way to lessen the distance between you and success.”
+          </p>
+          <br />
           <p className="text-slate-600 dark:text-slate-400 text-base leading-relaxed transition-all duration-1000 ease-out transform" style={{ transitionDelay: '600ms' }}>
-            At St. Angeloes, we are committed to providing a nurturing and stimulating environment where every student can thrive. Our dedicated faculty and state-of-the-art
-            facilities ensure a holistic education that prepares students for success in a rapidly changing world. We believe in fostering not just academic excellence, but also
-            character development and a lifelong love for learning.
+          At our school, we strongly believe that discipline, dedication, and determination are the keys that bridge the gap between dreams and success. With this vision, we strive to create a nurturing environment where every child is encouraged to explore, learn, and grow with confidence.
+          </p>
+          <p className="text-slate-600 dark:text-slate-400 text-base leading-relaxed transition-all duration-1000 ease-out transform" style={{ transitionDelay: '600ms' }}>
+          Our aim is not only to impart knowledge but also to instill values that help students become responsible, compassionate, and future-ready individuals. Together with parents and teachers, we aspire to shape young minds who carry the strength of character and the spirit of perseverance into everything they do.
           </p>
           <div className="mt-6 transition-all duration-1000 ease-out transform" style={{ transitionDelay: '800ms' }}>
             <p className="text-lg font-semibold text-primary dark:text-white">

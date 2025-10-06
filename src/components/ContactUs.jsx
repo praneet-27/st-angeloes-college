@@ -311,13 +311,13 @@ const ContactUs = () => {
                   <span className="text-primary text-xl mt-1 group-hover:scale-110 transition-transform duration-300">📍</span>
                   <div>
                     <strong className="text-slate-900 dark:text-white">St. Angeloes College</strong><br/>
-                    SHANTI NAGAR, NEAR AIRPORT, KANPUR ROAD, LUCKNOW
+                    SHANTI NAGAR, SAROJINI NAGAR, LUCKNOW
                   </div>
                 </div>
 
                 <div className="flex gap-4 p-4 bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 hover:shadow-xl transition-all duration-300 group">
                   <span className="text-primary text-xl mt-1 group-hover:scale-110 transition-transform duration-300">📞</span>
-                  <div>+91 8090097847, +91 7388891100, +91 7860915240</div>
+                  <div>+91 8840246549, +91 7388891100, +91 8090097847</div>
                 </div>
 
                 <div className="flex gap-4 p-4 bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 hover:shadow-xl transition-all duration-300 group">
@@ -329,7 +329,7 @@ const ContactUs = () => {
                   <span className="text-primary text-xl mt-1 group-hover:scale-110 transition-transform duration-300">🕒</span>
                   <div>
                     <strong className="text-slate-900 dark:text-white">Office Hours:</strong><br/>
-                    Monday - Friday, 9 AM - 5 PM
+                    Monday - Saturday, 8 AM - 4 PM
                   </div>
                 </div>
               </div>
@@ -339,7 +339,7 @@ const ContactUs = () => {
                 <h3 className="font-semibold text-slate-900 dark:text-white mb-4">Connect With Us</h3>
                 <div className="flex gap-4">
                   <a
-                    href="https://facebook.com"
+                    href="https://www.facebook.com/stangeloes/"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="p-3 rounded-full bg-primary/10 dark:bg-primary/20 hover:bg-primary/20 dark:hover:bg-primary/30 text-primary dark:text-white/80 transition-all duration-300 transform hover:scale-110"
@@ -350,7 +350,7 @@ const ContactUs = () => {
                     </svg>
                   </a>
                   <a
-                    href="https://instagram.com"
+                    href="https://www.instagram.com/stangeloescollege/"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="p-3 rounded-full bg-primary/10 dark:bg-primary/20 hover:bg-primary/20 dark:hover:bg-primary/30 text-primary dark:text-white/80 transition-all duration-300 transform hover:scale-110"

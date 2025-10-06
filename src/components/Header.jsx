@@ -28,10 +28,10 @@ const Header = () => {
             <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
               <a 
                 className="flex items-center gap-2 hover:text-primary/80 dark:hover:text-white transition-colors" 
-                href="tel:+91 8090097847"
+                href="tel:+91 8840246549"
               >
                 <span className="material-symbols-outlined text-base">call</span>
-                <span className="font-medium">+91 8090097847</span>
+                <span className="font-medium">+91 8840246549</span>
               </a>
               <a 
                 className="flex items-center gap-2 hover:text-primary/80 dark:hover:text-white transition-colors" 
@@ -44,7 +44,7 @@ const Header = () => {
             <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
               <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-base">location_on</span>
-                <span className="font-medium text-center">SHANTI NAGAR, NEAR AIRPORT, KANPUR ROAD, LUCKNOW</span>
+                <span className="font-medium text-center">SHANTI NAGAR, SAROJINI NAGAR, LUCKNOW</span>
               </div>
               <div className="flex items-center gap-2 bg-primary/20 dark:bg-primary/30 px-3 py-1 rounded-full">
                 <span className="material-symbols-outlined text-base">school</span>

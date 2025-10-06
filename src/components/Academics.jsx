@@ -101,8 +101,7 @@ const Academics = () => {
                   <p className={`text-lg text-slate-600 dark:text-slate-300 transition-all duration-1000 ease-out transform ${
                     headerVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
                   }`} style={{ transitionDelay: '300ms' }}>
-                    Explore our comprehensive academic programs designed to foster intellectual curiosity and personal growth from Kindergarten to Grade 12.
-                  </p>
+Explore our comprehensive academic programs aligned with National Education Policy 2020 and designed to foster intellectual curiosity and personal growth from Pre Primary to Grade 12                  </p>
                 </div>
               </div>
             </div>

@@ -11,10 +11,10 @@ const SchoolStats = () => {
   const sectionRef = useRef(null);
 
   const stats = useMemo(() => [
-    { key: 'students', target: 2500, suffix: '+', label: 'Current Students' },
-    { key: 'teachers', target: 150, suffix: '+', label: 'Dedicated Teachers' },
+    { key: 'students', target: 600, suffix: '+', label: 'Current Students' },
+    { key: 'teachers', target: 30, suffix: '+', label: 'Dedicated Teachers' },
     { key: 'alumni', target: 10000, suffix: '+', label: 'Alumni Network' },
-    { key: 'years', target: 35, suffix: '+', label: 'Years of Excellence' }
+    { key: 'years', target: 20, suffix: '+', label: 'Years of Excellence' }
   ], []);
 
   useEffect(() => {

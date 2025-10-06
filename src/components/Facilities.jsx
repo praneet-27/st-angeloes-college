@@ -54,21 +54,21 @@ const Facilities = () => {
     {
       id: 3,
       title: "Computer Lab",
-      description: "Modern computer lab with high-speed internet access to enhance digital literacy skills.",
+      description: "Modern computer lab to enhance digital literacy skills.",
       icon: "💻",
       color: "primary"
     },
     {
       id: 4,
       title: "Sports & Playground",
-      description: "A large playground and dedicated courts for various sports, promoting physical fitness and teamwork.",
+      description: "A large playground promoting physical fitness and teamwork.",
       icon: "⚽",
       color: "primary"
     },
     {
       id: 5,
       title: "Transport",
-      description: "A fleet of buses providing safe and reliable transport services for students across the city.",
+      description: "Buses to provide safe and reliable transport services for students across the city.",
       icon: "🚌",
       color: "primary"
     },
@@ -104,10 +104,10 @@ const Facilities = () => {
               <span className="text-primary font-semibold text-sm">Facilities</span>
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white tracking-tight mb-6">
-              Our <span className="text-primary">World-Class</span> Facilities
+              Our <span className="text-primary">Learning</span> Environment
             </h1>
             <p className="text-lg text-slate-600 dark:text-slate-300 max-w-3xl mx-auto leading-relaxed">
-              We provide a nurturing environment with state-of-the-art facilities to support holistic development and academic excellence.
+            We provide safe, comfortable, and well-maintained spaces that support learning and growth. From classrooms to play areas, every corner is designed to nurture curiosity and creativity in children.
             </p>
           </div>
 
