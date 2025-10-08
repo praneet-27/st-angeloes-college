@@ -88,6 +88,11 @@ export default async function handler(req, res) {
         is_featured
       } = req.body;
 
+      // Handle empty date strings - convert to null if empty
+      const processedApplicationDeadline = application_deadline && application_deadline.trim() !== '' 
+        ? application_deadline 
+        : null;
+
       // Validate required fields
       if (!title || !department || !job_type || !description) {
         return res.status(400).json({
@@ -110,7 +115,7 @@ export default async function handler(req, res) {
             salary_range,
             experience_level,
             education_required,
-            application_deadline,
+            application_deadline: processedApplicationDeadline,
             is_featured: is_featured || false,
             is_active: true
           }
@@ -146,6 +151,13 @@ export default async function handler(req, res) {
 
       if (!id) {
         return res.status(400).json({ error: 'Job opening ID is required' });
+      }
+
+      // Handle empty date strings - convert to null if empty
+      if (updateData.application_deadline !== undefined) {
+        updateData.application_deadline = updateData.application_deadline && updateData.application_deadline.trim() !== '' 
+          ? updateData.application_deadline 
+          : null;
       }
 
       // Remove id from update data to prevent conflicts
